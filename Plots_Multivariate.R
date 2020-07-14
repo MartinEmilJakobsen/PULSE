@@ -9,8 +9,12 @@ library(gridExtra)
 #######          Plots           ####### 
 ########################################
 
+#############################
+#### Varying confounding ####
+#############################
+
 #########################
-#### Beta 00 PULSE10 ####
+#### Beta 00 PULSE05 ####
 #########################
 
 # Read data
@@ -18,7 +22,7 @@ Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05
 ID <- "20200714024302"
 dat <- readRDS(file=Data_Location) 
 
-# Calculating MSE superiority percentages
+# Finding models where PULSE is MSE superior to Fuller(4)
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
   unique() %>% 
@@ -26,37 +30,8 @@ Optimal <- dat %>%
   rowwise() %>% 
   mutate(TrueSuperior = case_when( min(eigen(PULSE05-Ful4)$values) > 0 ~ "Ful4",
                                    min(eigen(Ful4-PULSE05)$values) > 0 ~ "PULSE05",
-                                   TRUE ~ "Not comparable"),
-         TrueSuperiorVsFul1 = case_when( min(eigen(PULSE05-Ful1)$values) > 0 ~ "Ful1",
-                                         min(eigen(Ful1-PULSE05)$values) > 0 ~ "PULSE05",
-                                         TRUE ~ "Not comparable"),
-         TrueSuperiorVsOLS = case_when( min(eigen(PULSE05-OLS)$values) > 0 ~ "OLS",
-                                        min(eigen(OLS-PULSE05)$values) > 0 ~ "PULSE05",
-                                        TRUE ~ "Not comparable")) %>% 
-  select(n,nModel,TrueSuperior,TrueSuperiorVsFul1,TrueSuperiorVsOLS) 
-
-
-Ful4 <- Optimal %>% 
-  group_by(TrueSuperior) %>%  
-  summarise(count = n()) %>% 
-  spread(TrueSuperior,count)
-Ful1 <- Optimal %>% 
-  group_by(TrueSuperiorVsFul1) %>%  
-  summarise(count = n()) %>%  
-  spread(TrueSuperiorVsFul1,count)
-OLS <- Optimal %>% 
-  group_by(TrueSuperiorVsOLS) %>%  
-  summarise(count = n()) %>% 
-  spread(TrueSuperiorVsOLS,count)
-
-bind_rows(Ful4,Ful1,OLS) %>% 
-  mutate_all(.funs=function(x){round(100*x/10000,1)}) %>% 
-  mutate_all(~replace(., is.na(.), 0.0))
-
-
-# Saving only the MSE superiority versus Fuller(4)
-Optimal <- Optimal %>% 
-  select(n,nModel,TrueSuperior)
+                                   TRUE ~ "Not comparable")) %>% 
+  select(n,nModel,TrueSuperior) 
 
 
 
@@ -85,18 +60,15 @@ Coefs <- dat %>%
   spread(Coef,ModelCoefs) %>% 
   rename(RhoSq=rhosq)
 
-ModelDataForSave <- Coefs %>% filter(nModel %in% {Optimal %>% filter(TrueSuperior=="PULSE05") %$% nModel} )
-
-saveRDS(ModelDataForSave,file="AllRandomCoefs_SuperiorModelData.RDS")
-
+# Computing relative change in performance measures
 LossData <- dat  %>%
-  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE05 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE05,pm), .f=function(Ful4,PULSE05,pm){ (Ful4-PULSE05)/PULSE05 }),
@@ -108,8 +80,11 @@ LossData <- dat  %>%
   gather(Type,Value,c(-nModel,-nSim,-n,-MeanGn,-pm,-Ful1,-Ful4,-OLS,-PULSE05,-MinEigenMeanGn,-MaxEigenMeanGn,-Superior))
 
 
+# Merging Data
 PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel")) ,Coefs,by=c("nModel"))
 
+
+# Plot for relative change in performance measures
 ggplot(data=PlotData) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
@@ -122,9 +97,14 @@ ggplot(data=PlotData) +
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(legend.position="bottom")
 
-ggsave("Plots/AllRandom_Beta00_20200627014219.png", plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
+
+
+##########################
+### MSE Superior Plots ###
+##########################
 
 p1 <- ggplot(data=PlotData %>% arrange(TrueSuperior)) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
@@ -141,8 +121,12 @@ p1 <- ggplot(data=PlotData %>% arrange(TrueSuperior)) +
   scale_color_manual(values=c("#999999", "#FF0000"))
 
 
+# Read Superior Models Rerun data
+
 dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_SuperiorModels_nSim_25000_nObsPerSim_50_20200702134109.RDS") %>% filter(Type != "PULSE10") #SuperiorModelswith 25k sims
 
+
+# Finding optimal
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
   unique() %>% 
@@ -240,7 +224,9 @@ ggsave("Plots/AllRandom_Beta00_PmSuperior_20200627014219.png", plot = last_plot(
        dpi = 200, limitsize = FALSE)
 
 
-############# PULSE10 BETA 0 0 ##################
+#########################
+#### Beta 00 PULSE10 ####
+#########################
 
 
 dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200701132236.RDS") #RandomVar+beta00
@@ -323,7 +309,9 @@ ggsave("Plots/AllRandom_Beta00_PULSE10_20200701132236.png", plot = last_plot(), 
 
 
 
-############# BETA 1 1 ##################
+#########################
+#### Beta 11 PULSE05 ####
+#########################
 
 dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200626125859.RDS") #RandomVar + beta11
 
@@ -401,7 +389,9 @@ ggsave("Plots/AllRandom_Beta11_20200626125859.png", plot = last_plot(), device =
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
-############# BETA -1 1 ##################
+##########################
+#### Beta -11 PULSE05 ####
+##########################
 
 dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200702230529.RDS") #RandomVar + beta-11
 
@@ -480,10 +470,9 @@ ggsave("Plots/AllRandom_Beta-11_20200626125859.png", plot = last_plot(), device 
        dpi = 200, limitsize = FALSE)
 
 
-############################################################
-################### Experiment 2    ########################
-############# 2d All random - Fixed Cor ####################
-############################################################
+###########################
+#### Fixed confounding ####
+###########################
 
 #dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_3000_nObsPerSim_50_nModel_2500_20200627020030.RDS") #RandomVar+fixedcorr+alot
 
