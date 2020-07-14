@@ -379,9 +379,13 @@ ggsave("Plots/AllRandom_Beta11_20200626125859.png", plot = last_plot(), device =
 #### Beta -11 PULSE05 ####
 ##########################
 
-dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200702230529.RDS") #RandomVar + beta-11
+# Read data
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta-11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200714211829.RDS"
+ID <- "20200714211829"
+dat <- readRDS(file=Data_Location)
 
 
+# Find Optimal Models
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
   unique() %>% 
@@ -392,6 +396,8 @@ Optimal <- dat %>%
                                    TRUE ~ "Not comparable")) %>% 
   select(n,nModel,TrueSuperior) 
 
+
+# Extract coefficients
 Rhosq <- dat %>% 
   filter(Type=="Ful1") %>%  
   select(nModel,ModelCoefs) %>% 
@@ -418,13 +424,13 @@ names(Rhosq) <- c("nModel","RhoSq","t")
 Rhosq <- Rhosq %>%  mutate(RhoSq= as.numeric(RhoSq)) %>% select(-t)
 
 LossData <- dat  %>%
-  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE05 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE05,pm), .f=function(Ful4,PULSE05,pm){ (Ful4-PULSE05)/PULSE05 }),
@@ -434,8 +440,6 @@ LossData <- dat  %>%
          MaxEigenMeanGn = map_dbl(.x= MeanGn,.f= function(x) {ifelse(is.double(eigen(x)$values),max(eigen(x)$values),NA)})) %>%
   mutate(Superior = ifelse(Ful4<PULSE05,"Ful4","PULSE")) %>% 
   gather(Type,Value,c(-nModel,-nSim,-n,-MeanGn,-pm,-Ful1,-Ful4,-OLS,-PULSE05,-MinEigenMeanGn,-MaxEigenMeanGn,-Superior))
-
-Optimal %>% group_by(TrueSuperior) %>%  summarise(count = n())
 
 PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel")) ,Rhosq,by=c("nModel"))
 
@@ -451,10 +455,10 @@ ggplot(data=PlotData) +
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(legend.position="bottom")
 
-ggsave("Plots/AllRandom_Beta-11_20200626125859.png", plot = last_plot(), device = NULL, path = NULL,
+
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
-
 
 ###########################
 #### Fixed confounding ####
