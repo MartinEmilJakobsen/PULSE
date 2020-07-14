@@ -133,7 +133,7 @@ nModel <-  seq(1,10000,1)
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
 
-plan(multiprocess, workers = 60)
+plan(multiprocess, workers = 62)
 
 dat <- expand_grid(nModel=nModel, nSim = nSim, n=nObsPerSim) %>%
   mutate(Res = future_pmap(list(nSim=nSim, n=n),.f=Simulate,.progress = TRUE)) %>%
