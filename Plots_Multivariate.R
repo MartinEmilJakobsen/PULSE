@@ -460,11 +460,12 @@ ggsave("Plots/AllRandom_Beta-11_20200626125859.png", plot = last_plot(), device 
 #### Fixed confounding ####
 ###########################
 
+# Read data
 Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
 ID <- "20200714130951"
 dat <- readRDS(file=Data_Location)
 
-
+#Finding MSE superior models
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE,Cov) %>%
   unique() %>% 
@@ -475,6 +476,7 @@ Optimal <- dat %>%
                                    TRUE ~ "Not comparable")) %>% 
   select(n,nModel,Cov,TrueSuperior) 
 
+#Extracting models coefficients
 Cors <- dat %>% 
   filter(Type=="Ful1") %>%  
   select(nModel,ModelCoefs,Cov) %>% 
@@ -489,9 +491,9 @@ Cors <- dat %>%
     "eta"),20000)  ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
   spread(Coef,ModelCoefs) %>% 
-  mutate(normRho = (phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2))
+  mutate(normRho = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
-
+# Calculating relative change in performance measures
 LossData <- dat  %>%
   select(nModel,Cov,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
@@ -511,19 +513,8 @@ LossData <- dat  %>%
   gather(Type,Value,c(-nModel,-Cov,-nSim,-n,-MeanGn,-pm,-Ful1,-Ful4,-OLS,-PULSE05,-MinEigenMeanGn,-MaxEigenMeanGn,-Superior))
 
 
-Optimal %>% group_by(TrueSuperior) %>%  summarise(count = n())
-
-
-# Percentage Better
-left_join(
-  LossData %>% filter(Ful4>= PULSE05) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Better=n()) %>% select(-Type) %>% unique(),
-  LossData %>% filter(PULSE05>= Ful4) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Worse=n())%>% select(-Type) %>% unique(),
-  by = c("Cov","pm")) %>% 
-  mutate(sum = Better+Worse, fractionBetter = round(100*Better/5000,1)) %>% arrange(pm)
-
-
+# Gathering Data for plot
 PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel","Cov")) ,Cors,by=c("nModel","Cov")) %>%  
-  mutate(normRho = round(normRho,1)) %>% 
   arrange(normRho,-eta) %>% 
   mutate(Label = paste0("'||'*rho*'||'[2]:'",sprintf("%.3f",normRho),"'~~eta:'",sprintf("%.3f",eta),"'~~phi[1]:'",sprintf("%.3f",phi1),"'~~phi[2]:'",sprintf("%.3f",phi2),"'")) 
 
@@ -532,12 +523,9 @@ scaleFUN <- function(x) sprintf("%.2f", x)
 p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
-  # scale_color_gradient(low = "blue", high = "orange")+
   facet_wrap( Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
   xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
-  # labs(colour="")+
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+
@@ -547,12 +535,9 @@ p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3)))
 p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
-  #scale_color_gradient(low = "blue", high = "orange")+
   facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
   xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
-  #labs(colour="")+
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+ 
@@ -562,12 +547,9 @@ p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2)))
 p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
-  #scale_color_gradient(low = "blue", high = "orange")+
   facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
   xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
-  #labs(colour="")+
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+ 
@@ -576,12 +558,9 @@ p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4)))
 p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
-  #scale_color_gradient(low = "blue", high = "orange")+
   facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
   xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
-  #labs(colour="")+
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ theme(axis.title.y = element_blank())+ scale_y_continuous(labels=scaleFUN)
 

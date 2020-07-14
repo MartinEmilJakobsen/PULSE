@@ -38,7 +38,7 @@ Cors <- dat %>%
     "eta"),20000)  ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
   spread(Coef,ModelCoefs) %>% 
-  mutate(normRho = (phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2))
+  mutate(normRho = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
 
 LossData <- dat  %>%
@@ -68,4 +68,4 @@ left_join(
   LossData %>% filter(Ful4>= PULSE05) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Better=n()) %>% select(-Type) %>% unique(),
   LossData %>% filter(PULSE05>= Ful4) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Worse=n())%>% select(-Type) %>% unique(),
   by = c("Cov","pm")) %>% 
-  mutate(sum = Better+Worse, fractionBetter = round(100*Better/5000,1)) %>% arrange(pm)
+  mutate(sum = Better+Worse, fractionBetter = round(100*Better/5000,2)) %>% arrange(pm)

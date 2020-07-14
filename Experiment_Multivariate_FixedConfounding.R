@@ -25,9 +25,9 @@ truealpha <- c(0,0)
 dimalpha <- ifelse(dZ == length(truealpha), dZ, NA)
 
 CovStructure <- data.frame(
-  phi1 = c(0.75,  0.353553, 0.424264,  0.9),
-  phi2 = c(0.75,  0.353553, 0.424264,  0.9),
-  eta =  c(0.25,  0.25,     0.8,       0.8)
+  phi1 = c(0.1897366597,  0.1549193338, 0.7589466387,  0.6196773353),
+  phi2 = c(0.1897366597,  0.1549193338, 0.7589466387,  0.6196773353),
+  eta =  c(0.8,           0.2,          0.8,           0.2)
 ) %>%  mutate(RhoNorm = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
 
