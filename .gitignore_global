@@ -1,0 +1,11 @@
+# files to ignore by git
+**/.RData
+**/.Rhistory
+
+**/.DS_Store
+
+**/*.log
+**/*.aux
+**/*.bbl
+**/*.blg
+**/*.synctex.gz
