@@ -97,7 +97,7 @@ ggplot(data=PlotData) +
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(legend.position="bottom")
 
-ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -203,23 +203,7 @@ p2 <- ggplot(data=PlotDataSup %>% filter(nModel %in% Optimal$nModel)) +
 plot <- arrangeGrob(p1,p2, ncol=1,widths=c(1),left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 1))
 
 
-ggsave(file="Plots/AllRandom_Beta00_TrueSuperior_20200627014219.png", plot = plot, device = NULL, path = NULL,
-       scale = 1, width = 12, height = 15, units = c("in"),
-       dpi = 300, limitsize = FALSE)
-
-
-ggplot(data=PlotData) +
-  geom_hline(yintercept =0,color="black",linetype="solid") +
-  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=Superior),alpha=0.5,size=0.8)+
-  facet_wrap(    Type ~ pm ,scales="free_y",ncol=3, labeller = label_both)+
-  xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
-  labs(colour="Performance Measure Superiorty - Fuller(4) vs PULSE(05)")+
-  ylab(expression(paste("Relative change of performance measure")))+
-  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+
-  theme(legend.position="bottom")
-
-ggsave("Plots/AllRandom_Beta00_PmSuperior_20200627014219.png", plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -228,10 +212,10 @@ ggsave("Plots/AllRandom_Beta00_PmSuperior_20200627014219.png", plot = last_plot(
 #### Beta 00 PULSE10 ####
 #########################
 
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10_nSim_5000_nObsPerSim_50_nModel_10000_20200714130951.RDS"
+ID <- "20200714130951"
+dat <- readRDS(file=Data_Location)
 
-dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200701132236.RDS") #RandomVar+beta00
-
-dat %<>% mutate(Type = ifelse(Type=="PULSE05","PULSE10",Type))
 
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
@@ -269,13 +253,13 @@ names(Rhosq) <- c("nModel","RhoSq","t")
 Rhosq <- Rhosq %>%  mutate(RhoSq= as.numeric(RhoSq)) %>% select(-t)
 
 LossData <- dat  %>%
-  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE10 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE10,pm), .f=function(Ful4,PULSE10,pm){ (Ful4-PULSE10)/PULSE10 }),
@@ -285,8 +269,6 @@ LossData <- dat  %>%
          MaxEigenMeanGn = map_dbl(.x= MeanGn,.f= function(x) {ifelse(is.double(eigen(x)$values),max(eigen(x)$values),NA)})) %>%
   mutate(Superior = ifelse(Ful4<PULSE10,"Ful4","PULSE")) %>% 
   gather(Type,Value,c(-nModel,-nSim,-n,-MeanGn,-pm,-Ful1,-Ful4,-OLS,-PULSE10,-MinEigenMeanGn,-MaxEigenMeanGn,-Superior))
-
-Optimal %>% group_by(TrueSuperior) %>%  summarise(count = n())
 
 PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel")) ,Rhosq,by=c("nModel"))
 
@@ -302,10 +284,9 @@ ggplot(data=PlotData) +
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(legend.position="bottom")
 
-ggsave("Plots/AllRandom_Beta00_PULSE10_20200701132236.png", plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE10_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
-
 
 
 
@@ -352,13 +333,13 @@ names(Rhosq) <- c("nModel","RhoSq","t")
 Rhosq <- Rhosq %>%  mutate(RhoSq= as.numeric(RhoSq)) %>% select(-t)
 
 LossData <- dat  %>%
-  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE05 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE05,pm), .f=function(Ful4,PULSE05,pm){ (Ful4-PULSE05)/PULSE05 }),

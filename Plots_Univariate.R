@@ -63,7 +63,7 @@ ggplot(data = RMSE_plotdata)+
   ylab(expression(paste("Relative Change in RMSE")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_RMSE",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_RMSE_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -98,7 +98,42 @@ ggplot(data = MeanBias_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_MeanBias",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_MeanBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+       scale = 1, width = 12, height = 6, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+
+##########################
+#### MedianBias Plots ####
+##########################
+
+MedianBias_plotdata <- dat2 %>% 
+  mutate(MedianBias = abs(MedianBias)) %>% 
+  select(-MeanEstimate,-IQRestimate,-RMSE,-VarEstimate,-MeanEstimate) %>%
+  spread(Type,MedianBias) %>% 
+  arrange(rho,nInst,Rsq,n,nInst) %>%  
+  mutate("PULSE05 to Fuller1" = (Ful1-PULSE05)/PULSE05,
+         "PULSE05 to Fuller4" = (Ful4-PULSE05)/PULSE05,
+         "PULSE05 to TSLS" = (TSLS-PULSE05)/PULSE05,
+         "PULSE05 to OLS" =(OLS-PULSE05)/PULSE05 
+  )  %>% 
+  select(-Ful1,-Ful4,-OLS,-PULSE05,-TSLS,-LIML)  %>% 
+  gather(Type,Value,c(-Fstat,-rho,-nInst,-Conc,-Rsq,-n,-MeanGn )) %>% 
+  mutate(rho=factor(rho), n = factor(n)) %>% 
+  filter(!(Type=="PULSE05 to TSLS" & nInst <2 ))
+
+
+ggplot(data = MedianBias_plotdata)+
+  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_vline(xintercept =log(10),color="black",linetype="dotted") +
+  geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
+  facet_wrap(~Type,scales= "free")+
+  xlab(expression(log(hat(E)[N](G[n]))))+
+  labs(colour=expression(rho))+
+  ylab(expression(paste("Relative Change in Median Bias")))+
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
+
+
+ggsave(paste0("Plots/Univariate_MedianBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -130,7 +165,7 @@ ggplot(data = Variance_plotdata)+
   ylab(expression(paste("Relative Change in Variance")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_Variance",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_Variance_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -164,6 +199,6 @@ ggplot(data = IQR_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_IQR",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_IQR_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
