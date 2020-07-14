@@ -18,7 +18,7 @@ K_class_lambda <- function(lambda,A,Z,Y,n){
 
 
 
-LIML_k <- function(A,A_1,X,Y,Y,n){
+LIML_k <- function(A,A_1,X,Y,n){
   P_A <- A%*%solve(t(A)%*%A)%*%t(A)
   if(A_1 == "none"){
     M_A_1 <- diag(n)
