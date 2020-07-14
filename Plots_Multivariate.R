@@ -1,6 +1,7 @@
 library(tidyverse)
 library(magrittr)
 library(stringr)
+library(grid)
 library(gridExtra)
 
 
@@ -123,7 +124,11 @@ p1 <- ggplot(data=PlotData %>% arrange(TrueSuperior)) +
 
 # Read Superior Models Rerun data
 
-dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_SuperiorModels_nSim_25000_nObsPerSim_50_20200702134109.RDS") %>% filter(Type != "PULSE10") #SuperiorModelswith 25k sims
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_SuperiorModels_nSim_25000_nObsPerSim_50_20200714175635.RDS"
+ID2 <- "20200714175635"
+dat <- readRDS(file=Data_Location) 
+
+
 
 
 # Finding optimal
@@ -156,7 +161,7 @@ CoefsSup <- dat %>%
     "mu22",
     "VepX1" ,
     "VepX2" ,
-    "rhosq"),456)
+    "rhosq"),494)
     
   ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
@@ -164,13 +169,13 @@ CoefsSup <- dat %>%
   rename(RhoSq=rhosq)
 
 LossDataSup <- dat  %>%
-  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE05 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE05,pm), .f=function(Ful4,PULSE05,pm){ (Ful4-PULSE05)/PULSE05 }),
@@ -203,8 +208,8 @@ p2 <- ggplot(data=PlotDataSup %>% filter(nModel %in% Optimal$nModel)) +
 plot <- arrangeGrob(p1,p2, ncol=1,widths=c(1),left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 1))
 
 
-ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
-       scale = 1, width = 12, height = 9, units = c("in"),
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior",ID,"_",ID2,".png"), plot = plot, device = NULL, path = NULL,
+       scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
 
@@ -455,18 +460,9 @@ ggsave("Plots/AllRandom_Beta-11_20200626125859.png", plot = last_plot(), device 
 #### Fixed confounding ####
 ###########################
 
-#dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_3000_nObsPerSim_50_nModel_2500_20200627020030.RDS") #RandomVar+fixedcorr+alot
-
-#dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629104506.RDS") #RandomVar+fixedcorr+selected
-#dat1 <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629173217.RDS") #RandomVar+fixedcorr+12
-#dat2 <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629182444.RDS") #RandomVar+fixedcorr+13
-#dat3 <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629212227.RDS") #RandomVar+fixedcorr+14
-#dat4 <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629214756.RDS") #RandomVar+fixedcorr+15
-#dat5 <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200629230200.RDS") #RandomVar+fixedcorr+16
-#dat <- bind_rows(dat,dat1,dat2,dat3,dat4,dat5)
-
-dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefsFixedNoiseCorr_nSim_5000_nObsPerSim_50_nModel_5000_20200701031153.RDS") #RandomVar+fixedcorr+selectedfinal
-
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
+ID <- "20200714130951"
+dat <- readRDS(file=Data_Location)
 
 
 Optimal <- dat %>% 
@@ -490,21 +486,20 @@ Cors <- dat %>%
     "xi22",
     "phi1",
     "phi2",
-    "eta"),25000)  ) %>% 
-  # filter(Coef %in% c("phi1","phi2","eta")) %>% 
+    "eta"),20000)  ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
   spread(Coef,ModelCoefs) %>% 
   mutate(normRho = (phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2))
 
 
 LossData <- dat  %>%
-  select(nModel,Cov,nSim,n,Type,MeanGn,Determinant,Trace,BiasTwoNorm) %>% 
+  select(nModel,Cov,nSim,n,Type,MeanGn,Determinant,Trace,Bias) %>% 
   gather(pm, Value, c("Determinant",
                       "Trace",
-                      "BiasTwoNorm")) %>% 
+                      "Bias")) %>% 
   mutate(pm = factor(pm, levels = c("Determinant",
                                     "Trace",
-                                    "BiasTwoNorm"))) %>% 
+                                    "Bias"))) %>% 
   spread(Type,Value) %>%
   ungroup() %>% 
   mutate("PULSE05 to Fuller4" = pmap_dbl(.l=list(Ful4,PULSE05,pm), .f=function(Ful4,PULSE05,pm){ (Ful4-PULSE05)/PULSE05 }),
@@ -534,7 +529,7 @@ PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel","Cov")) ,Cors
 
 scaleFUN <- function(x) sprintf("%.2f", x)
 
-p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
+p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
@@ -549,7 +544,7 @@ p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4)))
   theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
 
-p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
+p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
@@ -564,7 +559,7 @@ p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3)))
   theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
 
-p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2))) +
+p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
@@ -578,7 +573,7 @@ p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2)))
   theme(axis.title.y = element_blank())+ 
   theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
-p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(5))) +
+p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   #geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=1)+
@@ -590,47 +585,9 @@ p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(5)))
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ theme(axis.title.y = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
-grid.arrange(p1,p2,p3,p4,ncol=1)
 
 plot <- arrangeGrob(p1,p2,p3,p4, ncol=1,left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0))
-#,right = textGrob(expression(sqrt(lambda[max](hat(E)[N](G[n])))), rot = 270, vjust = 2))
 
-
-
-ggsave(file="Plots/AllRandom_fixedCorr_SMallRhoLargeEtaDecrease.png", plot = plot, device = NULL, path = NULL,
-       scale = 1, width = 12, height = 12, units = c("in"),
-       dpi = 300, limitsize = FALSE)
-
-
-p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
-  geom_hline(yintercept =0,color="black",linetype="solid") +
-  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=0.8)+
-  scale_color_gradient(low = "blue", high = "orange")+
-  facet_wrap( Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
-  xlab(expression(log(lambda[min](E[N](G[n])))))+
-  labs(colour="")+
-  ylab(expression(paste("Relative change of performance measure")))+
-  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
-  theme(axis.title.y = element_blank())+ 
-  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
-
-p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
-  geom_hline(yintercept =0,color="black",linetype="solid") +
-  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
-  geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=sqrt(MaxEigenMeanGn)),alpha=0.5,size=0.8)+
-  scale_color_gradient(low = "blue", high = "orange")+
-  facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
-  xlab(expression(log(lambda[min](E[N](G[n])))))+
-  labs(colour="")+
-  ylab(expression(paste("Relative change of performance measure")))+
-  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ theme(axis.title.y = element_blank())+ scale_y_continuous(labels=scaleFUN)
-
-
-plot <- arrangeGrob(p1,p2, ncol=1,widths=c(1),left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0),
-                    right = textGrob(expression(sqrt(lambda[max](hat(E)[N](G[n])))), rot = 270, vjust = 2))
-
-ggsave(file="Plots/AllRandom_fixedCorr_HighEtaSymmetricToNonSymmetricPhi.png", plot = plot, device = NULL, path = NULL,
-       scale = 1, width = 12, height = 6, units = c("in"),
-       dpi = 300, limitsize = FALSE)
-
+ggsave(paste0("Plots/Multivariate_FixedConfounding_",ID,".png"), plot =plot, device = NULL, path = NULL,
+       scale = 1, width = 12, height = 18, units = c("in"),
+       dpi = 200, limitsize = FALSE)

@@ -28,7 +28,7 @@ CovStructure <- data.frame(
   phi1 = c(0.75,  0.353553, 0.424264,  0.9),
   phi2 = c(0.75,  0.353553, 0.424264,  0.9),
   eta =  c(0.25,  0.25,     0.8,       0.8)
-) %>%  mutate(RhoNorm = (phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2))
+) %>%  mutate(RhoNorm = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
 
 Simulate <- function(nSim,n,Cov){
