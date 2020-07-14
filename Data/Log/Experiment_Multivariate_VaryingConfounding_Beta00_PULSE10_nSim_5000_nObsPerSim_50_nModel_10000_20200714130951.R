@@ -10,7 +10,7 @@ library(gridExtra)
 library(rlang)
 library(stringr)
 
-setwd("/home/lnd974/PULSE")
+setwd("/home/lnd974/causing/drafts/AR_and_Kclass/Github")
 source("Estimators_Fast.R")
 
 timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
@@ -92,7 +92,7 @@ Simulate <- function(nSim,n){
       tempdat[[i]] <- tibble( OLS = list(solve(t(Z)%*%Z)%*%t(Z)%*%Y),
                       Ful1 = list(FULLER_k(1,Y,X,A_1=A_1,n,dA,P_A) %>% K_class(.,Z=Z,Y,n,P_A)),
                       Ful4 = list(FULLER_k(4,Y,X,A_1=A_1,n,dA,P_A) %>% K_class(.,Z=Z,Y,n,P_A)),
-                      PULSE05 = list(BinarySearch(Z,Y,dZ,dA,p=0.05,N=10000,n=n,YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,P_A,A_1,X))
+                      PULSE10 = list(BinarySearch(Z,Y,dZ,dA,p=0.1,N=10000,n=n,YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,P_A,A_1,X))
     )  %>%
       gather(Type,alpha)  %>%
       rowwise()  %>%
@@ -141,11 +141,11 @@ dat <- expand_grid(nModel=nModel, nSim = nSim, n=nObsPerSim) %>%
 
 message("Parallization code has been executed without error")
 
-DataNameWOtimestamp <- paste0("Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_",paste0(nSim,collapse="_"),"_nObsPerSim_",paste0(nObsPerSim,collapse="_"),"_nModel_",length(nModel),"_")
+DataNameWOtimestamp <- paste0("Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10_nSim_",paste0(nSim,collapse="_"),"_nObsPerSim_",paste0(nObsPerSim,collapse="_"),"_nModel_",length(nModel),"_")
 saveRDS(dat,file=paste0("Data/",DataNameWOtimestamp,timestamp,".RDS"))
 
 message(paste0("Data-save has been executed without error: ",DataNameWOtimestamp,timestamp,".RDS"))
 
-file.copy(from="Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R", to=paste0("Data/Log/",DataNameWOtimestamp,timestamp,".R"), overwrite = TRUE, copy.mode = TRUE, copy.date = FALSE)
+file.copy(from="Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10.R", to=paste0("Data/Log/",DataNameWOtimestamp,timestamp,".R"), overwrite = TRUE, copy.mode = TRUE, copy.date = FALSE)
 
 message("Log-save has been executed without error")

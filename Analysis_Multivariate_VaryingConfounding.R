@@ -89,4 +89,4 @@ Coefs <- dat %>%
 
 ModelDataForSave <- Coefs %>% filter(nModel %in% {Optimal %>% filter(TrueSuperior=="PULSE05") %$% nModel} )
 
-saveRDS(ModelDataForSave,file="VaryingConfounding_MSESuperiorModelData.RDS")
+saveRDS(ModelDataForSave,file=paste0("Data/VaryingConfounding_MSESuperiorModelData_",ID,".RDS"))

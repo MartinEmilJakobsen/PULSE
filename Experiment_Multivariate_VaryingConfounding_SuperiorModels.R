@@ -10,7 +10,7 @@ library(gridExtra)
 library(rlang)
 library(stringr)
 
-setwd("/home/lnd974/causing/drafts/AR_and_Kclass/Github")
+setwd("/home/lnd974/PULSE")
 source("Estimators_Fast.R")
 
 timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
@@ -25,7 +25,7 @@ truealpha <- c(0,0)
 dimalpha <- ifelse(dZ == length(truealpha), dZ, NA)
 
 
-Models <- readRDS(file="VaryingConfounding_MSESuperiorModelData.RDS")
+Models <- readRDS(file="Data/VaryingConfounding_MSESuperiorModelData_20200714024302.RDS")
 
 Simulate <- function(nSim,n,delta11,delta12,delta21,delta22,mu11,mu22,RhoSq,VepX1,VepX2,xi11,xi12,xi21,xi22){
   

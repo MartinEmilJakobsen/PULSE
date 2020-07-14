@@ -10,7 +10,7 @@ library(gridExtra)
 library(rlang)
 library(stringr)
 
-setwd("/home/lnd974/causing/drafts/AR_and_Kclass/Github")
+setwd("/home/lnd974/PULSE")
 source("Estimators_Fast.R")
 
 timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
