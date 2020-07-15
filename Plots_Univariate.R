@@ -2,6 +2,7 @@ library(tidyverse)
 library(magrittr)
 library(stringr)
 library(gridExtra)
+library(dplyr)
 
 #####################################
 ####### Univariate Experiment ####### 
@@ -12,6 +13,15 @@ library(gridExtra)
 Data_Location <- "Data/Experiment_Univariate_nSim_15000_nObsPerSim_50_100_150_20200714022524.RDS"
 ID <- "20200714022524"
 dat <- readRDS(file=Data_Location) 
+
+Data_Location <- "Data/Experiment_Univariate_New_nSim_5000_nObsPerSim_50_100_150_20200715204805.RDS"
+ID <- "20200715204805"
+dat <- readRDS(file=Data_Location) 
+
+
+dat %>% filter(Type %in% c("OLS","PULSE05"))  %>% print(n=1000)
+
+dat %>% arrange(nInst) %>% print(n=300)
 
 # Select relevant data
 dat2 <- dat %>% 
@@ -52,11 +62,23 @@ RMSE_plotdata <- dat2 %>%
 
 dummy <- data.frame(MeanGn=2,Value=-1)
 
-ggplot(data = RMSE_plotdata)+
+
+ggplot(data = RMSE_plotdata %>% filter(Type=="PULSE05 to OLS"))+
   geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
-  geom_blank(data=dummy,aes(x=MeanGn,y=Value))+
+  #geom_blank(data=dummy,aes(x=MeanGn,y=Value))+
+  facet_wrap(~nInst,scales= "free")+
+  xlab(expression(log(hat(E)[N](G[n]))))+
+  labs(colour=expression(rho))+
+  ylab(expression(paste("Relative Change in RMSE")))+
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
+
+ggplot(data = RMSE_plotdata %>% filter(!(rho %in% c("0.01","0.05")) ) )+
+  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_vline(xintercept =log(10),color="black",linetype="dotted") +
+  geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
+ # geom_blank(data=dummy,aes(x=MeanGn,y=Value))+
   facet_wrap(~Type,scales= "free")+
   xlab(expression(log(hat(E)[N](G[n]))))+
   labs(colour=expression(rho))+

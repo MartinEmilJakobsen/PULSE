@@ -55,11 +55,9 @@ BinarySearch <- function(Z,Y,dZ,dA,p,N,n,YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,P_A,A_
   if(Test_Statistic(K_class(1,Z,Y,n,P_A),YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)>= q){
     Fuller4Kappa <- FULLER_k(4,Y,X,A_1=A_1,n,dA,P_A)
     alpha <- K_class(Fuller4Kappa,Z=Z,Y,n,P_A)
-  }
-  else if(Test_Statistic(K_class(0,Z,Y,n,P_A),YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)>= q){
-    alpha <- K_class(0,Z=Z,Y,n,P_A)
-    }
-  else{
+    } else if(Test_Statistic(K_class(0,Z,Y,n,P_A),YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)<= q){
+      alpha <- K_class(0,Z=Z,Y,n,P_A)
+      }  else{
     
   lmax <- 2
   lmin <- 0

@@ -92,10 +92,10 @@ Simulate <- function(nSim,n,nInst,rho,Rsq){
 
 # %% Executing simulation
 
-nSim <- 5000
+nSim <- 15000
 nObsPerSim <-  c(50,100,150)
 nInst <- c(1,2,3,4,5,10,20,30)
-rho <- c(0.01,0.05,seq(0.1,0.9,0.1))
+rho <- seq(0.1,0.9,0.1)
 Rsq <- c(0.0001,0.001,0.01,0.1,0.2,0.3)
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
