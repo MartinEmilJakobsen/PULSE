@@ -65,11 +65,14 @@ LossData <- dat  %>%
   mutate(Superior = ifelse(Ful4<PULSE05,"Ful4","PULSE")) %>% 
   gather(Type,Value,c(-nModel,-Cov,-nSim,-n,-MeanGn,-pm,-Ful1,-Ful4,-OLS,-PULSE05,-MinEigenMeanGn,-MaxEigenMeanGn,-Superior))
 
+# MSE Superiority
+Optimal %>% 
+  group_by(TrueSuperior,Cov) %>%  
+  summarise(count = n(), Percentage = 100*count/5000) %>% arrange(Cov) %>% 
+  left_join(Cors %>%  filter(nModel==1),by="Cov")
 
-Optimal %>% group_by(TrueSuperior) %>%  summarise(count = n())
 
-
-# Percentage Better
+# Percentage Better for determinant and trace performance measures
 left_join(
   LossData %>% filter(Ful4>= PULSE05) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Better=n()) %>% select(-Type) %>% unique(),
   LossData %>% filter(PULSE05>= Ful4) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Worse=n())%>% select(-Type) %>% unique(),

@@ -130,8 +130,6 @@ ID2 <- "20200714175635"
 dat <- readRDS(file=Data_Location) 
 
 
-
-
 # Finding optimal
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
