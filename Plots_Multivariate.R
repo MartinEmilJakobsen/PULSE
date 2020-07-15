@@ -1,4 +1,5 @@
 library(tidyverse)
+library(dplyr)
 library(magrittr)
 library(stringr)
 library(grid)
@@ -299,8 +300,10 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE10_",ID,".png")
 #### Beta 11 PULSE05 ####
 #########################
 
-dat <- readRDS(file="Data/FinalSim_MSE_IV2d_AllRandomCoefs_nSim_5000_nObsPerSim_50_nModel_10000_20200626125859.RDS") #RandomVar + beta11
-
+# Read data
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200715005101.RDS"
+ID <- "20200715005101"
+dat <- readRDS(file=Data_Location)
 
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%
@@ -371,7 +374,7 @@ ggplot(data=PlotData) +
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(legend.position="bottom")
 
-ggsave("Plots/AllRandom_Beta11_20200626125859.png", plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta11_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -464,9 +467,14 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".png"
 #### Fixed confounding ####
 ###########################
 
-# Read data
-Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
-ID <- "20200714130951"
+# Read data normRho = 0.447,0.949, eta =0.2,0.8
+# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
+# ID <- "20200714132856"
+# dat <- readRDS(file=Data_Location)
+
+# Read data normRho = 0.2,0.8, eta =0.2,0.8
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200715005001.RDS"
+ID <- "20200715005001"
 dat <- readRDS(file=Data_Location)
 
 #Finding MSE superior models
@@ -524,7 +532,7 @@ PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel","Cov")) ,Cors
 
 scaleFUN <- function(x) sprintf("%.2f", x)
 
-p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
+p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
@@ -548,7 +556,7 @@ p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2)))
   theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
 
-p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
+p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
@@ -559,7 +567,7 @@ p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4)))
   theme(axis.title.y = element_blank())+ 
   theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
 
-p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
+p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+

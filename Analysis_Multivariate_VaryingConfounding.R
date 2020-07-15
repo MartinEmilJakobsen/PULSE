@@ -96,3 +96,11 @@ saveRDS(ModelDataForSave,file=paste0("Data/VaryingConfounding_MSESuperiorModelDa
 ########################################
 ########## Count Error Models ########## 
 ########################################
+
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_CountErrorModels_nSim_5000_nObsPerSim_50_nModel_10000_20200715041723.RDS"
+ID <- "20200715041723"
+dat <- readRDS(file=Data_Location) 
+
+filter(dat,ErrorCount >0)
+
+#No models encountered error in trycatch.

@@ -9,8 +9,14 @@ library(gridExtra)
 ######### Fixed Confounding Analysis ########
 #############################################
 
-Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
-ID <- "20200714130951"
+# Read data normRho = 0.447,0.949, eta =0.2,0.8
+# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
+# ID <- "20200714132856"
+# dat <- readRDS(file=Data_Location)
+
+# Read data normRho = 0.2,0.8, eta =0.2,0.8
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200715005001.RDS"
+ID <- "20200715005001"
 dat <- readRDS(file=Data_Location)
 
 
@@ -68,4 +74,5 @@ left_join(
   LossData %>% filter(Ful4>= PULSE05) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Better=n()) %>% select(-Type) %>% unique(),
   LossData %>% filter(PULSE05>= Ful4) %>% select(Cov,pm,nModel,Type)  %>% group_by(Cov,pm,Type) %>% summarise(Worse=n())%>% select(-Type) %>% unique(),
   by = c("Cov","pm")) %>% 
-  mutate(sum = Better+Worse, fractionBetter = round(100*Better/5000,2)) %>% arrange(pm)
+  mutate(sum = Better+Worse, fractionBetter = round(100*Better/5000,2)) %>% arrange(pm) %>% 
+  left_join(Cors %>%  filter(nModel==1),by="Cov")
