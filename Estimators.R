@@ -38,7 +38,7 @@ LIML_k <- function(A,A_1,X,Y,n){
 
 FULLER_k <- function(alpha,A,A_1,X,Y,n,dA){
   P_A <- A%*%solve(t(A)%*%A)%*%t(A)
-  LIML_kappa <- LIML_k(Y,X,A_1,n,P_A)
+  LIML_kappa <- LIML_k(A,A_1,X,Y,n)
   return(LIML_kappa-alpha/(n-dA))
 }
 
@@ -59,8 +59,18 @@ Test_Statistic <- function(a,A,Z,Y,n){
 }
 
 
-BinarySearch <- function(A,A_1,X,Z,Y,dZ,dA,p,N,n)
+PULSE <- function(A,A_1,X,Y,p,N,n)
 {
+  if(A_1 == "none")
+  {
+    Z <- X
+  } else {
+    Z <- bind_cols(A_1,X)
+  }
+  dZ <- ncol(Z)
+  dA <- ncol(A)
+  n <- nrow(A)
+  
   P_A <- A%*%solve(t(A)%*%A)%*%t(A)
   YtP_AY <- t(Y)%*%P_A%*%Y
   ZtP_AZ <- t(Z)%*%P_A%*%Z
@@ -71,16 +81,17 @@ BinarySearch <- function(A,A_1,X,Z,Y,dZ,dA,p,N,n)
   
   q <- qchisq(1-p,df=dA, ncp=0,lower.tail = TRUE,log.p = FALSE)
   
-  if(Test_Statistic(K_class(1,Z,Y,n,P_A),YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)>= q){
-    Fuller4Kappa <- FULLER_k(4,Y,X,A_1=A_1,n,dA,P_A)
-    alpha <- K_class(Fuller4Kappa,Z=Z,Y,n,P_A)
+  if(Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n)>= q){
+    message("TSLS rejected")
+    Fuller4Kappa <- FULLER_k(4,A,A_1,X,Y,n,dA)
+    alpha <- K_class(Fuller4Kappa,A,Z,Y,n)
   }
   else{
     
   lmax <- 2
   lmin <- 0
   
-  while(Test_Statistic(K_class_lambda(lmax,Z,Y,n,P_A),YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)>q){
+  while(Test_Statistic(K_class_lambda(lmax,A,Z,Y,n),A,Z,Y,n)>q){
     lmin <- lmax
     lmax <- lmax^2
   }
@@ -88,9 +99,9 @@ BinarySearch <- function(A,A_1,X,Z,Y,dZ,dA,p,N,n)
   Delta <- lmax-lmin
   
   while(Delta > 1/N || Accept == FALSE){
-    l <- 2^((log2(lmin)+log2(lmax))/2)
-    alpha <- K_class_lambda(l,Z,Y,n,P_A)
-    TestStatistic <- Test_Statistic(alpha,YtP_AY,ZtP_AZ,YtP_AZ,YtY,ZtZ,YtZ,n)
+    l <- (lmin+lmax)/2
+    alpha <- K_class_lambda(l,A,Z,Y,n)
+    TestStatistic <- Test_Statistic(alpha,A,Z,Y,n)
     if(TestStatistic>q){
       Accept <- FALSE
       lmin <- l
@@ -102,9 +113,10 @@ BinarySearch <- function(A,A_1,X,Z,Y,dZ,dA,p,N,n)
     }
     Delta <- lmax-lmin
   }
-  alpha <- K_class_lambda(lmax,Z,Y,n,P_A)
+  alpha <- K_class_lambda(lmax,A,Z,Y,n)
   }
   return(alpha)
 }
+
 
 

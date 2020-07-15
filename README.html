@@ -182,18 +182,22 @@ summary {
 
 <div id="distributional-robustness-of-k-class-estimators-and-the-pulse" class="section level1">
 <h1>Distributional Robustness of K-class Estimators and the PULSE</h1>
-<p>Repository for simulations and illustrations for “Distributional Robustness of K-class Estimators and the PULSE” @ <a href="https://arxiv.org/abs/2005.03353" class="uri">https://arxiv.org/abs/2005.03353</a>. This repository also contains all R scripts for conducting the experiments referenced in the paper. In /Data the experiment data used in the paper is present.</p>
+<p>Repository for simulations and illustrations for “Distributional Robustness of K-class Estimators and the PULSE” @ <a href="https://arxiv.org/abs/2005.03353" class="uri">https://arxiv.org/abs/2005.03353</a>.</p>
 <div id="implementation-of-k-class-estimators-and-the-pulse" class="section level2">
 <h2>Implementation of K-class estimators and the PULSE</h2>
+<p>Implementation of Estimators is found in “Estimators.R”. The PULSE estimate is computed by running:</p>
+<p>PULSE(A,A_1,X,Y,p,N)</p>
+<p>where A,A_1,X,Z,Y are the datamatrices (rowwise obeservations) for: all exogenous, included exogenous, included endogenous and target endogeous, respectively. If there is no included exogenous variables, then set A_1= “none”. p is the <span class="math inline">\(p_{min}\)</span> for PULSE rejection threshold. 1/N is the precision of the binary search (in the lambda space).</p>
 </div>
-<div id="replicate-experiments-and-illustrations" class="section level2 tabset">
-<h2>Replicate experiments and illustrations</h2>
-<p>Follow the steps in 1) Data generation, 2) Data Analysis and 3) Generate Illustrations, to replicate experiments.</p>
-<div id="data-generation" class="section level3 tabset">
+<div id="replicate-experiments" class="section level2">
+<h2>Replicate experiments</h2>
+<p>This repository also contains all R scripts for conducting the experiments referenced in the paper. In /Data the experiment data used in the paper is present. Thus, to simply rerun analysis and illustration generation on this data start from step 2) below and ignore comments about data-pointers.</p>
+<p>If you want to replicate all experiments then start from step 1) and do not ignore comments about data-pointer as the subsequent analysis and illustration generation has to point to the newly generated data. Note that the code is parallelized and depending on the system you need to specify the number of availiable cores in “plan(multiprocess, workers = [NO.CORES])” in each script. On a 64 core system (Intel Xeon E7-4860 v2 @ 2.6GHz and 256Gb memory) each of the VaryingConfounding scripts has a runtime of 3 hours (2.5 billion draws from a structural model), while the FixedConfounding script has a runtime of 6 hours (5 billion draws).</p>
+<div id="data-generation" class="section level3">
 <h3>1) Data generation</h3>
 <div id="a-initial-experiments" class="section level4">
 <h4>1.a) Initial Experiments</h4>
-<p>To generate the experiment data: run the following scripts. Each script saves the data at “Data/SCRIPTNAME_REPLICATIONS_OBSERVATIONS_EXECUTIONTIME.RDS” and saves a copy of the script at “Data/Log/SCRIPTNAME_REPLICATIONS_OBSERVATIONS_EXECUTIONTIME.RDS”.</p>
+<p>To generate the experiment data: run the following scripts. Each script saves the data at “Data/[SCRIPTNAME]<em>[REPLICATIONS]</em>[OBSERVATIONS]_[EXECUTIONTIME].RDS&quot; and saves a copy of the script at “Data/Log/[SCRIPTNAME]<em>[REPLICATIONS]</em>[OBSERVATIONS]_[EXECUTIONTIME].RDS“.</p>
 <ol style="list-style-type: decimal">
 <li><strong>Experiment_Univariate.R</strong>
 <ul>
@@ -225,10 +229,10 @@ summary {
 <h4>1.b) Run Experiment for Superior Models</h4>
 <p>This will extract the coefficients for the models where PULSE(05) is MSE superior to Fuller(4) of the “Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R” experiment and rerun the experiment for these models with 25000 repetitions to account for selection bias.</p>
 <ol style="list-style-type: decimal">
-<li>Locate the datafile “Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_REPLICATIONS_OBSERVATIONS_EXECUTIONTIME.RDS” of 1.a).</li>
+<li>Locate the datafile “Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_[REPLICATIONS]<em>[OBSERVATIONS]</em>[EXECUTIONTIME].RDS” of 1.a).</li>
 <li>Edit the data pointer in <strong>Analysis_SelectingSuperiorModels.R</strong> to this datafile and run the script.
 <ul>
-<li>This script saves “Data/VaryingConfounding_MSESuperiorModelData_EXECUTIONTIME.RDS” with the extracted models.</li>
+<li>This script saves “Data/VaryingConfounding_MSESuperiorModelData_[EXECUTIONTIME].RDS” with the extracted models.</li>
 </ul></li>
 <li>Edit the datapointer in “Experiment_Multivariate_VaryingConfounding_SuperiorModels.R” to the extracted models and run the script.</li>
 </ol>
@@ -237,18 +241,18 @@ summary {
 <div id="section" class="section level3">
 <h3></h3>
 </div>
-<div id="data-analysis" class="section level3 tabset">
+<div id="data-analysis" class="section level3">
 <h3>2) Data Analysis</h3>
-<p>All analysis on experiment data reported in the paper (<a href="https://arxiv.org/abs/2005.03353" class="uri">https://arxiv.org/abs/2005.03353</a>) can be found in</p>
+<p>All analysis on experiment data reported in the paper can be found in</p>
 <ol style="list-style-type: decimal">
 <li><strong>Analysis_Multivariate_VaryingConfounding.R</strong></li>
 <li><strong>Analysis_Multivariate_FixedConfounding.R</strong></li>
 </ol>
 <p>Note that data-pointers in these scripts have to be adjusted to if used on new experiment data.</p>
 </div>
-<div id="generate-illustrations" class="section level3 tabset">
+<div id="generate-illustrations" class="section level3">
 <h3>3) Generate Illustrations</h3>
-<p>All illustrations in the paper (<a href="https://arxiv.org/abs/2005.03353" class="uri">https://arxiv.org/abs/2005.03353</a>) is generated by the scripts:</p>
+<p>All illustrations in the paper is generated by the scripts:</p>
 <ol style="list-style-type: decimal">
 <li><strong>Plots_Univariate.R</strong></li>
 <li><strong>Plots_Multivariate.R</strong></li>
