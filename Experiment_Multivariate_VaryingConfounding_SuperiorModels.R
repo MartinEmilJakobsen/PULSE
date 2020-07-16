@@ -25,7 +25,7 @@ truealpha <- c(0,0)
 dimalpha <- ifelse(dZ == length(truealpha), dZ, NA)
 
 
-Models <- readRDS(file="Data/VaryingConfounding_MSESuperiorModelData_20200714024302.RDS")
+Models <- readRDS(file="Data/VaryingConfounding_MSESuperiorModelData_20200716080129.RDS")
 
 Simulate <- function(nSim,n,delta11,delta12,delta21,delta22,mu11,mu22,RhoSq,VepX1,VepX2,xi11,xi12,xi21,xi22){
   

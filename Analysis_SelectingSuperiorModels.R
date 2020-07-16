@@ -1,4 +1,5 @@
 library(tidyverse)
+library(dplyr)
 library(magrittr)
 library(stringr)
 library(gridExtra)
@@ -14,8 +15,8 @@ library(gridExtra)
 #########################
 
 # Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200714024302.RDS"
-ID <- "20200714024302"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716080129.RDS"
+ID <- "20200716080129"
 dat <- readRDS(file=Data_Location) 
 
 # Calculating MSE superiority percentages
