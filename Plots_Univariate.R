@@ -18,6 +18,10 @@ Data_Location <- "Data/Experiment_Univariate_New_nSim_5000_nObsPerSim_50_100_150
 ID <- "20200715204805"
 dat <- readRDS(file=Data_Location) 
 
+Data_Location <- "Data/Experiment_Univariate_New_nSim_15000_nObsPerSim_50_100_150_20200716000042.RDS"
+ID <- "20200716000042"
+dat <- readRDS(file=Data_Location) 
+
 
 dat %>% filter(Type %in% c("OLS","PULSE05"))  %>% print(n=1000)
 

@@ -24,6 +24,12 @@ Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05
 ID <- "20200714024302"
 dat <- readRDS(file=Data_Location) 
 
+# Read data
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716000215.RDS"
+ID <- "20200716000215"
+dat <- readRDS(file=Data_Location) 
+
+
 # Finding models where PULSE is MSE superior to Fuller(4)
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE) %>%

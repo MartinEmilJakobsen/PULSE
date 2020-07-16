@@ -113,7 +113,7 @@ xis <- c("Positive","Negative","Mixed")
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
 
-plan(multiprocess, workers = 61)
+plan(multiprocess, workers = 62)
 
 dat <- expand_grid(nInst=nInst,rho=rho,Rsq=Rsq, nSim = nSim, n=nObsPerSim,truealpha= truealpha,xis=xis) %>%
   arrange(-nInst,-n) %>% 

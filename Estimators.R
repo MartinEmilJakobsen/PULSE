@@ -85,6 +85,9 @@ PULSE <- function(A,A_1,X,Y,p,N,n)
     message("TSLS rejected")
     Fuller4Kappa <- FULLER_k(4,A,A_1,X,Y,n,dA)
     alpha <- K_class(Fuller4Kappa,A,Z,Y,n)
+  } else if(Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n)<= q){
+    message("OLS Accepted")
+    alpha <- K_class(0,A,Z,Y,n)
   }
   else{
     

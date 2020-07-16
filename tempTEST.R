@@ -45,9 +45,9 @@ truealpha <- c(1,1)
   eigen(Gn)
   log(272)
   
-  p <- 0.5
-  
-  q <- qchisq(1-p,df=5, ncp=0,lower.tail = TRUE,log.p = FALSE)
+  p <- 0.05
+  N <- 1000000
+  q <- qchisq(1-p,df=2, ncp=0,lower.tail = TRUE,log.p = FALSE)
   Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n)
  
   Test_Statistic(solve(t(Z)%*%Z)%*%t(Z)%*%Y,A,Z,Y,n) 
