@@ -17,9 +17,11 @@ message("REMAINING: Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R 
 source(file="Experiment_Univariate.R")
 
 message("EXECUTING Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R")
+message("REMAINING: Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10.R , Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05.R")
 source(file="Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R")
 
 message("EXECUTING Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10.R")
+message("REMAINING: Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05.R")
 source(file="Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10.R")
 
 message("EXECUTING Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05.R")
