@@ -20,13 +20,8 @@ library(gridExtra)
 #########################
 
 # Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200714024302.RDS"
-ID <- "20200714024302"
-dat <- readRDS(file=Data_Location) 
-
-# Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716000215.RDS"
-ID <- "20200716000215"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716080129.RDS"
+ID <- "20200716080129"
 dat <- readRDS(file=Data_Location) 
 
 
@@ -110,9 +105,33 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_",ID,".png")
        dpi = 200, limitsize = FALSE)
 
 
+########################
+### pm Superior plot ###
+########################
+
+ggplot(data=PlotData) +
+  geom_hline(yintercept =0,color="black",linetype="solid") +
+  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
+  geom_point(aes(x=log(MinEigenMeanGn),y=Value,color=Superior),alpha=0.5,size=0.8)+
+  facet_wrap(    Type ~ pm ,scales="free_y",ncol=3, labeller = label_both)+
+  xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
+  labs(colour="Performance Measure Superiorty - Fuller(4) vs PULSE(05)")+
+  ylab(expression(paste("Relative change of performance measure")))+
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+
+  theme(legend.position="bottom")
+
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_pmSuperior_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+
+
 ##########################
 ### MSE Superior Plots ###
 ##########################
+
+
+
+
 
 p1 <- ggplot(data=PlotData %>% arrange(TrueSuperior)) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
@@ -131,8 +150,8 @@ p1 <- ggplot(data=PlotData %>% arrange(TrueSuperior)) +
 
 # Read Superior Models Rerun data
 
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_SuperiorModels_nSim_25000_nObsPerSim_50_20200714175635.RDS"
-ID2 <- "20200714175635"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_SuperiorModels_nSim_25000_nObsPerSim_50_20200716154413.RDS"
+ID2 <- "20200716154413"
 dat <- readRDS(file=Data_Location) 
 
 
@@ -166,7 +185,7 @@ CoefsSup <- dat %>%
     "mu22",
     "VepX1" ,
     "VepX2" ,
-    "rhosq"),494)
+    "rhosq"),461)
     
   ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
@@ -222,8 +241,8 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior
 #### Beta 00 PULSE10 ####
 #########################
 
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10_nSim_5000_nObsPerSim_50_nModel_10000_20200714130951.RDS"
-ID <- "20200714130951"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE10_nSim_5000_nObsPerSim_50_nModel_10000_20200716122010.RDS"
+ID <- "20200716122010"
 dat <- readRDS(file=Data_Location)
 
 
@@ -305,8 +324,8 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE10_",ID,".png")
 #########################
 
 # Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200715005101.RDS"
-ID <- "20200715005101"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716180808.RDS"
+ID <- "20200716180808"
 dat <- readRDS(file=Data_Location)
 
 Optimal <- dat %>% 
@@ -387,8 +406,8 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta11_PULSE05_",ID,".png")
 ##########################
 
 # Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta-11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200714211829.RDS"
-ID <- "20200714211829"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta-11_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716033957.RDS"
+ID <- "20200716033957"
 dat <- readRDS(file=Data_Location)
 
 
@@ -471,14 +490,9 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".png"
 #### Fixed confounding ####
 ###########################
 
-# Read data normRho = 0.447,0.949, eta =0.2,0.8
-# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
-# ID <- "20200714132856"
-# dat <- readRDS(file=Data_Location)
-
 # Read data normRho = 0.2,0.8, eta =0.2,0.8
-Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200715005001.RDS"
-ID <- "20200715005001"
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200716060820.RDS"
+ID <- "20200716060820"
 dat <- readRDS(file=Data_Location)
 
 #Finding MSE superior models

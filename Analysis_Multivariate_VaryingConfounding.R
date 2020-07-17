@@ -17,8 +17,8 @@ library(gridExtra)
 ### Analysis of Initial Experiment:
 
 # Read data
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200714024302.RDS"
-ID <- "20200714024302"
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_nSim_5000_nObsPerSim_50_nModel_10000_20200716080129.RDS"
+ID <- "20200716080129"
 dat <- readRDS(file=Data_Location) 
 
 # Calculating MSE superiority percentages
@@ -61,11 +61,11 @@ bind_rows(Ful4,Ful1,OLS) %>%
 ### Analysis of Experiment rerun on the optimal models from above:
 
 
-Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_SuperiorModels_nSim_25000_nObsPerSim_50_20200714175635.RDS"
-ID <- "20200714175635"
-dat <- readRDS(file=Data_Location) 
+Data_Location <- "Data/Experiment_Multivariate_VaryingConfounding_SuperiorModels_nSim_25000_nObsPerSim_50_20200716154413.RDS"
+ID <- "20200716154413"
+dat2 <- readRDS(file=Data_Location) 
 
-Optimal <- dat %>% 
+Optimal <- dat2 %>% 
   select(n,nModel,Type,MSE) %>%
   unique() %>% 
   spread(Type,MSE) %>%  
