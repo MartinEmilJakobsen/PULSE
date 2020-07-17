@@ -9,14 +9,9 @@ library(gridExtra)
 ######### Fixed Confounding Analysis ########
 #############################################
 
-# Read data normRho = 0.447,0.949, eta =0.2,0.8
-# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200714132856.RDS"
-# ID <- "20200714132856"
-# dat <- readRDS(file=Data_Location)
-
 # Read data normRho = 0.2,0.8, eta =0.2,0.8
-Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200715005001.RDS"
-ID <- "20200715005001"
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200716060820.RDS"
+ID <- "20200716060820"
 dat <- readRDS(file=Data_Location)
 
 

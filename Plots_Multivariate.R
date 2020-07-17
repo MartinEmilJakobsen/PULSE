@@ -599,5 +599,5 @@ p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4)))
 plot <- arrangeGrob(p1,p2,p3,p4, ncol=1,left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0))
 
 ggsave(paste0("Plots/Multivariate_FixedConfounding_",ID,".png"), plot =plot, device = NULL, path = NULL,
-       scale = 1, width = 12, height = 18, units = c("in"),
+       scale = 1, width = 12, height = 10, units = c("in"),
        dpi = 200, limitsize = FALSE)

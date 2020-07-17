@@ -25,9 +25,9 @@ truealpha <- c(0,0)
 dimalpha <- ifelse(dZ == length(truealpha), dZ, NA)
 
 CovStructure <- data.frame(
-  phi1 = c(0.1897366597,  0.1549193338, 0.7589466387,  0.6196773353),
-  phi2 = c(0.1897366597,  0.1549193338, 0.7589466387,  0.6196773353),
-  eta =  c(0.8,           0.2,          0.8,           0.2)
+  phi1 = c(0.1897366597,  0.1549193338, 0.4743416492,  0.3872983345,0.7589466387,  0.6196773353),
+  phi2 = c(0.1897366597,  0.1549193338, 0.4743416492,  0.3872983345,0.7589466387,  0.6196773353),
+  eta =  c(0.8,           0.2,          0.8,           0.2         ,0.8,           0.2         )
 ) %>%  mutate(RhoNorm = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
 
@@ -107,7 +107,7 @@ Simulate <- function(nSim,n,Cov){
 
 # %% Executing simulation
 
-nSim <- 5000
+nSim <- 10000
 nObsPerSim <-  c(50)
 Cov <- c(1,2,3,4)
 nModel <-  seq(1,5000,1)
