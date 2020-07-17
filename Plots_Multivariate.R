@@ -109,6 +109,7 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_",ID,".png")
 ### pm Superior plot ###
 ########################
 
+
 ggplot(data=PlotData) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
