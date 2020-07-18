@@ -109,7 +109,7 @@ Simulate <- function(nSim,n,Cov){
 
 nSim <- 10000
 nObsPerSim <-  c(50)
-Cov <- c(1,2,3,4)
+Cov <- c(1,2,3)#,4,5,6)
 nModel <-  seq(1,5000,1)
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
