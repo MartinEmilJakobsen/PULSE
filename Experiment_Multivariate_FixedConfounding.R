@@ -15,7 +15,7 @@ source("Estimators_Fast.R")
 
 timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
 
-set.seed(1)
+set.seed(54433663)
 
 dA <- 2
 dX <- 2
@@ -109,7 +109,7 @@ Simulate <- function(nSim,n,Cov){
 
 nSim <- 10000
 nObsPerSim <-  c(50)
-Cov <- c(1,2,3)#,4,5,6)
+Cov <- c(4,5,6)#,4,5,6)
 nModel <-  seq(1,5000,1)
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
