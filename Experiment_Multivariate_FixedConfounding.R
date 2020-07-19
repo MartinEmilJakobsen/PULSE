@@ -15,7 +15,7 @@ source("Estimators_Fast.R")
 
 timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
 
-set.seed(54433663)
+set.seed(1)
 
 dA <- 2
 dX <- 2
@@ -31,17 +31,17 @@ CovStructure <- data.frame(
 ) %>%  mutate(RhoNorm = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
 
 
-Simulate <- function(nSim,n,Cov){
+
+Simulate <- function(nModel,nSim,n,Cov){
 
   phi1 <- CovStructure[Cov,1]
   phi2 <- CovStructure[Cov,2]
   eta <-  CovStructure[Cov,3]
   
-  
-  xi11 <-runif(1,min=-2,max=2)
-  xi12 <-runif(1,min=-2,max=2)
-  xi21 <-runif(1,min=-2,max=2)
-  xi22 <-runif(1,min=-2,max=2)
+  xi11 <- Models$xi11[nModel]
+  xi12 <- Models$xi12[nModel]
+  xi21 <- Models$xi21[nModel]
+  xi22 <- Models$xi22[nModel]
   
   xi = matrix(c(xi11,xi12,xi21,xi22),ncol=2,byrow=TRUE)
   
@@ -107,17 +107,23 @@ Simulate <- function(nSim,n,Cov){
 
 # %% Executing simulation
 
-nSim <- 10000
+nSim <- 5000
 nObsPerSim <-  c(50)
-Cov <- c(4,5,6)#,4,5,6)
-nModel <-  seq(1,5000,1)
+Cov <- c(1,2,3,4,5,6)
+
+NoModels <- 5000
+Models <- data.frame(  xi11 =runif(NoModels,min=-2,max=2),
+                       xi12 =runif(NoModels,min=-2,max=2),
+                       xi21 =runif(NoModels,min=-2,max=2),
+                       xi22 =runif(NoModels,min=-2,max=2))
+nModel <-  seq(1,NoModels,1)
 
 message(paste("Initializing Parallization code @",as.character(Sys.time())))
 
 plan(multiprocess, workers = 62)
 
 dat <- expand_grid(nModel=nModel, nSim = nSim, n=nObsPerSim, Cov = Cov) %>%
-  mutate(Res = future_pmap(list(nSim=nSim, n=n, Cov=Cov),.f=Simulate,.progress = TRUE)) %>%
+  mutate(Res = future_pmap(list(nModel=nModel,nSim=nSim, n=n, Cov=Cov),.f=Simulate,.progress = TRUE)) %>%
   unnest(cols=c(Res))
 
 message("Parallization code has been executed without error")

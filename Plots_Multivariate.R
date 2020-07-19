@@ -496,6 +496,18 @@ Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPe
 ID <- "20200716060820"
 dat <- readRDS(file=Data_Location)
 
+
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_10000_nObsPerSim_50_nModel_5000_20200718134501.RDS"
+ID1 <- "20200718134501"
+dat1 <- readRDS(file=Data_Location)
+
+
+Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_10000_nObsPerSim_50_nModel_5000_20200718134602.RDS"
+ID2 <- "20200718134602"
+dat2 <- readRDS(file=Data_Location)
+
+dat <- bind_rows(dat1,dat2)
+
 #Finding MSE superior models
 Optimal <- dat %>% 
   select(n,nModel,Type,MSE,Cov) %>%
@@ -519,7 +531,7 @@ Cors <- dat %>%
     "xi22",
     "phi1",
     "phi2",
-    "eta"),20000)  ) %>% 
+    "eta"),30000)  ) %>% 
   unnest(cols=c(ModelCoefs)) %>% 
   spread(Coef,ModelCoefs) %>% 
   mutate(normRho = sqrt((phi1^2+phi2^2-2*eta*phi1*phi2)/(1-eta^2)))
@@ -551,6 +563,8 @@ PlotData <- left_join(left_join(LossData,Optimal,by=c("n","nModel","Cov")) ,Cors
 
 scaleFUN <- function(x) sprintf("%.2f", x)
 
+PlotData %>% arrange(pm,nModel,Cov) %>% print(n=30)
+
 p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
@@ -560,7 +574,8 @@ p1 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(1)))
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+
-  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
+  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
 
 
 p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2))) +
@@ -572,7 +587,8 @@ p2 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(2)))
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+ 
-  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
+  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
 
 
 p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3))) +
@@ -584,20 +600,44 @@ p3 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(3)))
   ylab(expression(paste("Relative change of performance measure")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
   theme(axis.title.y = element_blank())+ 
-  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)
+  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
 
 p4 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(4))) +
   geom_hline(yintercept =0,color="black",linetype="solid") +
   geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
   geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
   facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
+  theme(axis.title.y = element_blank())+ 
+  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
+
+p5 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(5))) +
+  geom_hline(yintercept =0,color="black",linetype="solid") +
+  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
+  geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
+  facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
+  theme(axis.title.y = element_blank())+ 
+  theme(axis.title.x = element_blank())+ scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
+
+p6 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(6))) +
+  geom_hline(yintercept =0,color="black",linetype="solid") +
+  geom_vline(xintercept =log(15.5),color="black",linetype="dotted") +
+  geom_point(aes(x=log(MinEigenMeanGn),y=Value),alpha=0.1,size=1)+
+  facet_wrap(  Label ~ pm ,scales="free_y",ncol=3, labeller = label_parsed)+
   xlab(expression(log(lambda[min](hat(E)[N](G[n])))))+
   ylab(expression(paste("Relative change of performance measure")))+
-  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ theme(axis.title.y = element_blank())+ scale_y_continuous(labels=scaleFUN)
+  theme(plot.margin = unit(c(0,0.8,0,0), "cm"))+ 
+  theme(axis.title.y = element_blank())+ 
+  scale_y_continuous(labels=scaleFUN)+
+  scale_x_continuous(limits= c(0,5))
 
 
-plot <- arrangeGrob(p1,p2,p3,p4, ncol=1,left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0))
+plot <- arrangeGrob(p1,p2,p3,p4,p5,p6, ncol=1,left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0))
 
 ggsave(paste0("Plots/Multivariate_FixedConfounding_",ID,".png"), plot =plot, device = NULL, path = NULL,
-       scale = 1, width = 12, height = 10, units = c("in"),
+       scale = 1, width = 12, height = 14, units = c("in"),
        dpi = 200, limitsize = FALSE)
