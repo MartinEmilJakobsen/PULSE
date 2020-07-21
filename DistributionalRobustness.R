@@ -11,7 +11,7 @@ library(rlang)
 library(stringr)
 
 setwd("/home/lnd974/causing/drafts/AR_and_Kclass/Simulations")
-source("FunctionsNew.R")
+source("Estimators_Fast.R")
 
 
 #Generating Coefficients
@@ -111,7 +111,7 @@ temp %>%
   geom_line(data=. %>% filter(ID==9999),aes(x=InstStrength/100,y=SupMSE,group = Coef),color="black",size=0.5,alpha=0.9)+
   ylab("Worst case mean squared prediction error")+
   xlab("Maximum Intervention Strength sup|v|")+ 
-  #coord_cartesian(ylim=c(0.8, 1.2))+
+  coord_cartesian(ylim=c(0.8, 1.2))+
   theme(plot.margin = unit(c(0,0.2,0,0), "cm"))+ 
   scale_x_continuous(expand=c(0,0)) +
   scale_y_continuous(expand=c(0,0))+
@@ -124,89 +124,3 @@ ggsave("Plots/Dist_Robustness.png", plot = last_plot(), device = NULL, path = NU
        dpi = 200, limitsize = FALSE)
 
 
-
-
-######### n=50 #########
-
-
-set.seed(1)
-
-temp <- list()
-for(i in 1: 50){
-  n<- 50
-  A <- rnorm(n,mean=0,sd=1)
-  U <- mvrnorm(n,mu=c(0,0),Sigma=matrix(c(1,0.5,0.5,1),ncol=2))
-  X <-A + U[,1]
-  Y <-X+ U[,2]
-  Z <- X
-  
-  P_A <- A%*%solve(t(A)%*%A)%*%t(A)
-  temp[i] <- list(data.frame(
-    TSLS = K_class(1,Z=Z,Y,n,P_A) %>% as.numeric(),
-    OLS = solve(t(Z)%*%Z)%*%t(Z)%*%Y %>% as.numeric(),
-    K3o4 = K_class(3/4,Z=Z,Y,n,P_A) %>% as.numeric())
-  )
-}
-
-
-IDs <- temp %>% bind_rows() %>% 
-  mutate(.,ID=seq(1,nrow(.),1)) %>% 
-  bind_rows(.,data.frame(TSLS = 1, OLS = 1.25,K3o4= 1.1, ID=9999)) %>% 
-  gather(Type,Coef, c(-ID)) %>%  
-  expand_grid(InstStrength=as.integer(seq(0,100000,1))) %>% 
-  rowwise() %>% 
-  mutate(MSE = MSE(Coef,InstStrength/100) ,
-         InstStrength = abs(InstStrength)/100) %>%
-  arrange(Type,Coef,ID,InstStrength) %>%
-  ungroup %>% 
-  group_by(Type,Coef,ID) %>% 
-  mutate(SupMSE=cummax(MSE)) %>% 
-  unique() %>% 
-  ungroup %>% 
-  select(-MSE,-Coef) %>%
-  arrange(ID,InstStrength,SupMSE) %>% 
-  ungroup %>% 
-  group_by(ID,InstStrength) %>% 
-  filter(SupMSE == min(SupMSE)) %>% 
-  ungroup %>% 
-  group_by(ID,Type) %>% 
-  filter(InstStrength == min(InstStrength)|
-           InstStrength == max(InstStrength))
-
-
-IDs %>%   summarise( Length = (max(InstStrength)-min(InstStrength))) %>% 
-  spread(Type,Length) %>% 
-  select(ID,OLS,K3o4,TSLS) %>% 
-  arrange(K3o4) %>% 
-  print(n=300)
-
-
-IDs %>%  summarise( SuperiorRange = paste0("[",round(min(InstStrength),3),",",round(max(InstStrength),3),"]")) %>% 
-  spread(Type,SuperiorRange) %>% 
-  select(ID,OLS,K3o4,TSLS) %>% 
-  print(n=300)
-
-
-IDs %>%  summarise( SuperiorRange = paste0("[",round(min(InstStrength),3),",",round(max(InstStrength),3),"]")) %>% 
-  spread(Type,SuperiorRange) %>% 
-  select(ID,OLS,K3o4,TSLS) %>% 
-  filter(ID %in% c(33,10))
-  print(n=300)
-  
-  
-temp %>% 
-  bind_rows() %>% 
-  mutate(.,ID=seq(1,nrow(.),1)) %>%  
-  filter(ID %in% 
-           {IDs %>%   summarise( Length = (max(InstStrength)-min(InstStrength))) %>% 
-                                                spread(Type,Length) %>% 
-                                                select(ID,OLS,K3o4,TSLS) %>% 
-                                                filter(is.na(TSLS))  %>% 
-                                                pull(ID)}
-         )  %>% 
-  mutate(dist = K3o4 -TSLS )
-  
-temp %>% 
-  bind_rows() %>% 
-  mutate(.,ID=seq(1,nrow(.),1)) %>% 
-  mutate(dist = K3o4 -TSLS )

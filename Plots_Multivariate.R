@@ -491,23 +491,7 @@ ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".png"
 #### Fixed confounding ####
 ###########################
 
-# # Read data normRho = 0.2,0.8, eta =0.2,0.8
-# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200716060820.RDS"
-# ID <- "20200716060820"
-# dat <- readRDS(file=Data_Location)
-# 
-# 
-# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_10000_nObsPerSim_50_nModel_5000_20200718134501.RDS"
-# ID1 <- "20200718134501"
-# dat1 <- readRDS(file=Data_Location)
-# 
-# 
-# Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_10000_nObsPerSim_50_nModel_5000_20200718134602.RDS"
-# ID2 <- "20200718134602"
-# dat2 <- readRDS(file=Data_Location)
-# 
-# dat <- bind_rows(dat1,dat2)
-
+# # Read data normRho = 0.2,0.5,0.8, eta =0.2,0.8
 
 Data_Location <- "Data/Experiment_Multivariate_FixedConfounding_nSim_5000_nObsPerSim_50_nModel_5000_20200720165943.RDS"
 ID <- "20200720165943"
