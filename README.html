@@ -192,12 +192,12 @@ summary {
 <div id="replicate-experiments" class="section level2">
 <h2>Replicate experiments</h2>
 <p>This repository also contains all R scripts for conducting the experiments referenced in the paper. In /Data the experiment data used in the paper is present. Thus, to simply rerun analysis and illustration generation on this data start from step 2) below and ignore comments about data-pointers.</p>
-<p>If you want to replicate all experiments then start from step 1) and do not ignore comments about data-pointer as the subsequent analysis and illustration generation has to point to the newly generated data. Note that the code is parallelized and depending on the system you need to specify the number of availiable cores in “plan(multiprocess, workers = [NO.CORES])” in each script. On a 64 core system (Intel Xeon E7-4860 v2 @ 2.6GHz and 256Gb memory) each of the VaryingConfounding scripts has a runtime of 3 hours (2.5 billion draws from a structural model), while the FixedConfounding script has a runtime of 6 hours (5 billion draws).</p>
+<p>If you want to replicate all experiments then start from step 1) and do not ignore comments about data-pointer as the subsequent analysis and illustration generation has to point to the newly generated data. Note that the code is parallelized and depending on the system you need to specify the number of availiable cores in “plan(multiprocess, workers = [NO.CORES])” in each script. On a 64 core system (Intel Xeon E7-4860 v2 @ 2.6GHz and 256Gb memory) each of the VaryingConfounding scripts has a runtime of 3 hours (2.5 billion draws from a structural model), while the FixedConfounding script has a runtime of 9 hours (7.5 billion draws).</p>
 <div id="data-generation" class="section level3">
 <h3>1) Data generation</h3>
 <div id="a-initial-experiments" class="section level4">
 <h4>1.a) Initial Experiments</h4>
-<p>To generate the experiment data: run the following scripts. Each script saves the data at “Data/[SCRIPTNAME]<em>[REPLICATIONS]</em>[OBSERVATIONS]_[EXECUTIONTIME].RDS&quot; and saves a copy of the script at “Data/Log/[SCRIPTNAME]<em>[REPLICATIONS]</em>[OBSERVATIONS]_[EXECUTIONTIME].RDS“.</p>
+<p>To generate the experiment data: Run Script.R or manually run the following scripts. Each script saves the data at “Data/[SCRIPTNAME]_ [REPLICATIONS]_ [OBSERVATIONS]_ [EXECUTIONTIME].RDS” and saves a copy of the script at “Data/Log/[SCRIPTNAME]_ [REPLICATIONS]_ [OBSERVATIONS]_ [EXECUTIONTIME].RDS”.</p>
 <ol style="list-style-type: decimal">
 <li><strong>Experiment_Univariate.R</strong>
 <ul>
@@ -223,13 +223,17 @@ summary {
 <ul>
 <li><em>This scripts runs the multivariate experiment with fixed confounding for <span class="math inline">\(\beta=(0,0)\)</span>. It computes the performance measures for OLS, Fuller(1), Fuller(4) and PULSE with <span class="math inline">\(p_{\min}=0.05\)</span></em></li>
 </ul></li>
+<li><strong>Experiment_Univariate_AlternativeSetups.R</strong>
+<ul>
+<li>*This scripts runs the univariate experiment under the alternative setups.</li>
+</ul></li>
 </ol>
 </div>
 <div id="b-run-experiment-for-superior-models" class="section level4">
 <h4>1.b) Run Experiment for Superior Models</h4>
 <p>This will extract the coefficients for the models where PULSE(05) is MSE superior to Fuller(4) of the “Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R” experiment and rerun the experiment for these models with 25000 repetitions to account for selection bias.</p>
 <ol style="list-style-type: decimal">
-<li>Locate the datafile “Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_[REPLICATIONS]<em>[OBSERVATIONS]</em>[EXECUTIONTIME].RDS” of 1.a).</li>
+<li>Locate the datafile “Data/Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05_[REPLICATIONS]_ [OBSERVATIONS]_ [EXECUTIONTIME].RDS” of 1.a).</li>
 <li>Edit the data pointer in <strong>Analysis_SelectingSuperiorModels.R</strong> to this datafile and run the script.
 <ul>
 <li>This script saves “Data/VaryingConfounding_MSESuperiorModelData_[EXECUTIONTIME].RDS” with the extracted models.</li>
@@ -256,8 +260,10 @@ summary {
 <ol style="list-style-type: decimal">
 <li><strong>Plots_Univariate.R</strong></li>
 <li><strong>Plots_Multivariate.R</strong></li>
+<li><strong>LevelsetPlots.R</strong></li>
+<li><strong>DistributionalRobustness.R</strong></li>
 </ol>
-<p>Note that data-pointers in these scripts have to be adjusted to if used on new experiment data.</p>
+<p>Note that data-pointers in script 1 &amp; 2 have to be adjusted to if used on new experiment data.</p>
 </div>
 </div>
 </div>
