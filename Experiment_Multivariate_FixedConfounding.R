@@ -107,7 +107,7 @@ Simulate <- function(nModel,nSim,n,Cov){
 
 # %% Executing simulation
 
-nSim <- 5000
+nSim <- 10000
 nObsPerSim <-  c(50)
 Cov <- c(1,2,3,4,5,6)
 
