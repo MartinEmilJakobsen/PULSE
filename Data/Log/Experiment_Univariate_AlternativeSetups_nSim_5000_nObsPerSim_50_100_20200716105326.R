@@ -103,7 +103,7 @@ Simulate <- function(nSim,n,nInst,rho,Rsq,truealpha,xis=xis){
 
 # %% Executing simulation
 
-nSim <- 5000
+nSim <- 15000
 nObsPerSim <-  c(50,100)
 nInst <- c(5,10,30)
 rho <- c(-0.9,-0.5,-0.3,-0.1,0.1,0.3,0.5,0.9)
