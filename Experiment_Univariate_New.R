@@ -17,7 +17,7 @@ timestamp <- as.character(Sys.time()) %>% {str_replace_all(.,"[: -]","")}
 
 set.seed(1)
 
-truealpha <- c(1)
+truealpha <- c(0)
 
 Simulate <- function(nSim,n,nInst,rho,Rsq){
   dA <- nInst
