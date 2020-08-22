@@ -14,6 +14,12 @@ Data_Location <- "Data/Experiment_Univariate_nSim_15000_nObsPerSim_50_100_150_20
 ID <- "20200716034113"
 dat <- readRDS(file=Data_Location) 
 
+Data_Location <- "Data/Experiment_Univariate_nSim_15000_nObsPerSim_50_100_150_20200822000552.RDS"
+ID <- "20200822000552"
+dat <- readRDS(file=Data_Location) 
+
+
+
 # Select relevant data
 dat2 <- dat %>% 
   rowwise() %>% 
@@ -212,8 +218,12 @@ ggsave(paste0("Plots/Univariate_IQR_",ID,".png"), plot = last_plot(), device = N
 #####################################
 
 # Read data
-Data_Location <- "Data/Experiment_Univariate_AlternativeSetups_nSim_5000_nObsPerSim_50_100_20200716105326.RDS"
-ID <- "20200716105326"
+# Data_Location <- "Data/Experiment_Univariate_AlternativeSetups_nSim_5000_nObsPerSim_50_100_20200716105326.RDS"
+# ID <- "20200716105326"
+# dat <- readRDS(file=Data_Location) 
+
+Data_Location <- "Data/Experiment_Univariate_AlternativeSetups_nSim_15000_nObsPerSim_50_100_20200822000650.RDS"
+ID <- "20200822000650"
 dat <- readRDS(file=Data_Location) 
 
 # Select relevant data
@@ -245,8 +255,9 @@ RMSE_plotdata <- dat2 %>%
 
 dummy <- data.frame(MeanGn=2,Value=-1)
 
-ggplot(data = RMSE_plotdata %>% filter(!(rho %in% c("0.01","0.05")) ) )+
-  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+ggplot(data = RMSE_plotdata)+
+  #geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_jitter(aes(x=log(MeanGn),y=Value,color=rho,shape=n))+
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
   # geom_blank(data=dummy,aes(x=MeanGn,y=Value))+
@@ -281,7 +292,8 @@ MeanBias_plotdata <- dat2 %>%
 
 
 ggplot(data = MeanBias_plotdata)+
-  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+#geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_jitter(aes(x=log(MeanGn),y=Value,color=rho,shape=n))+
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
   facet_wrap(truealpha+xis~Type,scales= "free",labeller = "label_both",ncol=4)+
@@ -289,6 +301,7 @@ ggplot(data = MeanBias_plotdata)+
   labs(colour=expression(rho))+
   ylab(expression(paste("Relative Change in Mean Bias")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
+
 
 
 ggsave(paste0("Plots/Univariate_AlternativeSetups_MeanBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
@@ -316,7 +329,8 @@ MedianBias_plotdata <- dat2 %>%
 
 
 ggplot(data = MedianBias_plotdata)+
-  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  #geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_jitter(aes(x=log(MeanGn),y=Value,color=rho,shape=n))+
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
   facet_wrap(truealpha+xis~Type,scales= "free",labeller = "label_both",ncol=4)+
@@ -349,7 +363,8 @@ Variance_plotdata <- dat2 %>%
   filter(!(Type=="PULSE05 to TSLS" & nInst <3) & !(Value>=100))
 
 ggplot(data = Variance_plotdata)+
-  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  #geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_jitter(aes(x=log(MeanGn),y=Value,color=rho,shape=n))+
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
   facet_wrap(truealpha+xis~Type,scales= "free",labeller = "label_both",ncol=4)+
@@ -382,7 +397,8 @@ IQR_plotdata <- dat2 %>%
 
 
 ggplot(data = IQR_plotdata)+
-  geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  #geom_point(aes(x=log(MeanGn),y=Value,color=rho,shape=n)) +
+  geom_jitter(aes(x=log(MeanGn),y=Value,color=rho,shape=n))+
   geom_vline(xintercept =log(10),color="black",linetype="dotted") +
   geom_vline(xintercept =log(1.55),color="black",linetype="dashed") +
   facet_wrap(truealpha+xis~Type,scales= "free",labeller = "label_both",ncol=4)+
