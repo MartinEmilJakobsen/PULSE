@@ -9,6 +9,8 @@ library(metR)
 library(gridExtra)
 library(rlang)
 library(stringr)
+library(AER)
+
 
 getwd()
 source("../Estimators_Fast.R")
@@ -89,7 +91,28 @@ QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>%
 
 
 
-Selected_Data <- QOB_Data  %>% filter(COHORT == "30.39")
+Selected_Data <- QOB_Data  %>% filter(COHORT == "30.39") %>% 
+  select(-c(V3,V7,V14,V15,V17,V22,V23))
+
+Selected_Data_OLS <- Selected_Data %>% select(LWKLYWGE,EDUC, YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>% pull
+
+n <- nrow(Selected_Data)
+
+Y <- Selected_Data %>% select(LWKLYWGE) %>%  as.matrix
+A <- Selected_Data %>% select(YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>% as.matrix
+Z <- Selected_Data %>% select(EDUC,YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>%  as.matrix
+
+str(Y)
+K_class(0,A,Z,Y,n)
+K_class <- function(k,A,Z,Y,n){
+  P_A <- A%*%solve(t(A)%*%A)%*%t(A)
+  Wk <- t(Z) %*% ((1-k)*diag(n)+k* P_A )  %*%Z
+  a <- solve(Wk) %*% t(Z) %*% ( (1-k)*diag(n) + k*P_A ) %*% Y 
+  return(a)
+}
+
+Selected_DataSelected_Data
 
 lm(LWKLYWGE ~ EDUC + YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29,data=Selected_Data)
-spread
+ivreg(LWKLYWGE ~ EDUC + YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29 | YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29,
+      data= Selected_Data)
