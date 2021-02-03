@@ -10,10 +10,12 @@ library(gridExtra)
 library(rlang)
 library(stringr)
 library(AER)
+library(matlib)
+library(ivpack)
 
 
 getwd()
-source("../Estimators_Fast.R")
+source("../Estimators_Slow.R")
 
 QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>% 
   as_tibble() %>% 
@@ -44,75 +46,178 @@ QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>%
          AGEQ = ifelse(CENSUS==80,AGEQ-1900,AGEQ),
          AGEQSQ = AGEQ^2,
          YOBTEMP = YOB-floor(YOB/10)*10)  %>%  #CHECK IF FAILURE
-  mutate(YR20 = ifelse(YOBTEMP==0,1,0),
-         YR21 = ifelse(YOBTEMP==1,1,0),
-         YR22 = ifelse(YOBTEMP==2,1,0),
-         YR23 = ifelse(YOBTEMP==3,1,0),
-         YR24 = ifelse(YOBTEMP==4,1,0),
-         YR25 = ifelse(YOBTEMP==5,1,0),
-         YR26 = ifelse(YOBTEMP==6,1,0),
-         YR27 = ifelse(YOBTEMP==7,1,0),
-         YR28 = ifelse(YOBTEMP==8,1,0),
-         YR29 = ifelse(YOBTEMP==9,1,0),
+  mutate(YR0 = ifelse(YOBTEMP==0,1,0),
+         YR1 = ifelse(YOBTEMP==1,1,0),
+         YR2 = ifelse(YOBTEMP==2,1,0),
+         YR3 = ifelse(YOBTEMP==3,1,0),
+         YR4 = ifelse(YOBTEMP==4,1,0),
+         YR5 = ifelse(YOBTEMP==5,1,0),
+         YR6 = ifelse(YOBTEMP==6,1,0),
+         YR7 = ifelse(YOBTEMP==7,1,0),
+         YR8 = ifelse(YOBTEMP==8,1,0),
+         YR9 = ifelse(YOBTEMP==9,1,0),
          QTR1 = ifelse(QOB == 1, 1, 0),
          QTR2 = ifelse(QOB == 2, 1, 0),
          QTR3 = ifelse(QOB == 3, 1, 0),
          QTR4 = ifelse(QOB == 4, 1, 0),
-         QTR120= QTR1*YR20,
-         QTR121= QTR1*YR21,
-         QTR122= QTR1*YR22,
-         QTR123= QTR1*YR23,
-         QTR124= QTR1*YR24,
-         QTR125= QTR1*YR25,
-         QTR126= QTR1*YR26,
-         QTR127= QTR1*YR27,
-         QTR128= QTR1*YR28,
-         QTR129= QTR1*YR29,
-         QTR220= QTR2*YR20,
-         QTR221= QTR2*YR21,
-         QTR222= QTR2*YR22,
-         QTR223= QTR2*YR23,
-         QTR224= QTR2*YR24,
-         QTR225= QTR2*YR25,
-         QTR226= QTR2*YR26,
-         QTR227= QTR2*YR27,
-         QTR228= QTR2*YR28,
-         QTR229= QTR2*YR29,
-         QTR320= QTR3*YR20,
-         QTR321= QTR3*YR21,
-         QTR322= QTR3*YR22,
-         QTR323= QTR3*YR23,
-         QTR324= QTR3*YR24,
-         QTR325= QTR3*YR25,
-         QTR326= QTR3*YR26,
-         QTR327= QTR3*YR27,
-         QTR328= QTR3*YR28,
-         QTR329= QTR3*YR29) 
-
-
+         QTRxYR10= QTR1*YR0,
+         QTRxYR11= QTR1*YR1,
+         QTRxYR12= QTR1*YR2,
+         QTRxYR13= QTR1*YR3,
+         QTRxYR14= QTR1*YR4,
+         QTRxYR15= QTR1*YR5,
+         QTRxYR16= QTR1*YR6,
+         QTRxYR17= QTR1*YR7,
+         QTRxYR18= QTR1*YR8,
+         QTRxYR19= QTR1*YR9,
+         QTRxYR20= QTR2*YR0,
+         QTRxYR21= QTR2*YR1,
+         QTRxYR22= QTR2*YR2,
+         QTRxYR23= QTR2*YR3,
+         QTRxYR24= QTR2*YR4,
+         QTRxYR25= QTR2*YR5,
+         QTRxYR26= QTR2*YR6,
+         QTRxYR27= QTR2*YR7,
+         QTRxYR28= QTR2*YR8,
+         QTRxYR29= QTR2*YR9,
+         QTRxYR30= QTR3*YR0,
+         QTRxYR31= QTR3*YR1,
+         QTRxYR32= QTR3*YR2,
+         QTRxYR33= QTR3*YR3,
+         QTRxYR34= QTR3*YR4,
+         QTRxYR35= QTR3*YR5,
+         QTRxYR36= QTR3*YR6,
+         QTRxYR37= QTR3*YR7,
+         QTRxYR38= QTR3*YR8,
+         QTRxYR39= QTR3*YR9) 
+#################################################################
+#################################################################
+#################################################################
+######## TABLE IV: MEN BORN 1930-1939 - 1980 CENSUS DATA ######## 
+#################################################################
+#################################################################
+#################################################################
 
 Selected_Data <- QOB_Data  %>% filter(COHORT == "30.39") %>% 
-  select(-c(V3,V7,V14,V15,V17,V22,V23))
+  select(-c(V3,V7,V14,V15,V17,V22,V23)) 
 
-Selected_Data_OLS <- Selected_Data %>% select(LWKLYWGE,EDUC, YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>% pull
+############################################################################
+#COLUMN 1 & 2 : LWKLYWGE ~ YR20-YR29 + EDUC (INSTRUMENTS = YR20-YR29 + QTR)#
+############################################################################
+n <- nrow(Selected_Data)
+#Target
+Y <- Selected_Data %>% select(LWKLYWGE) %>%  as.matrix
+#Included Exogenous:
+A_1 <- Selected_Data %>% select(starts_with("YR")) %>% as.matrix
+#All Exogenous
+A <- Selected_Data %>% select(starts_with("YR"),starts_with("QTRxYR")) %>% as.matrix
+#Included Endogenous
+X <- Selected_Data %>% select(EDUC) %>%  as.matrix
+#Included (all)
+Z <- cbind(X,A_1)
+
+#OLS
+K_class(0,A,Z,Y,n)
+
+#IV
+K_class(1,A,Z,Y,n)
+
+#PULSE
+PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+#LM and IVREG check
+lm(LWKLYWGE~EDUC+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
+ivfit<-ivreg(LWKLYWGE~EDUC+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1|YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9+
+QTRxYR10+QTRxYR11+QTRxYR12+QTRxYR13+QTRxYR14+QTRxYR15+QTRxYR16+QTRxYR17+QTRxYR18+QTRxYR19+QTRxYR20+QTRxYR21+QTRxYR22+QTRxYR23+QTRxYR24+QTRxYR25+QTRxYR26+QTRxYR27+QTRxYR28+QTRxYR29+QTRxYR30+QTRxYR31+QTRxYR32+QTRxYR33+QTRxYR34+QTRxYR35+QTRxYR36+QTRxYR37+QTRxYR38+QTRxYR39,data=Selected_Data,x=TRUE)
+summary(ivfit)
+
+anderson.rubin.ci(ivfit)
+
+############################################################################
+#COLUMN 3 & 4 : LWKLYWGE ~ YR20-YR29 + AGEQ + AGEQSQ + EDUC (INSTRUMENTS = YR20-YR29 + QTR + AGEQ + AGEQSQ)#
+############################################################################
+n <- nrow(Selected_Data)
+#Target
+Y <- Selected_Data %>% select(LWKLYWGE) %>%  as.matrix
+#Included Exogenous:
+A_1 <- Selected_Data %>% select(starts_with("YR"),AGEQ,AGEQSQ) %>% as.matrix
+#All Exogenous
+A <- Selected_Data %>% select(starts_with("YR"),AGEQ,AGEQSQ,starts_with("QTRxYR"),-QTRxYR38,-QTRxYR39) %>% as.matrix
+#Included Endogenous
+X <- Selected_Data %>% select(EDUC) %>%  as.matrix
+#Included (all)
+Z <- cbind(X,A_1)
+
+#OLS
+K_class(0,A,Z,Y,n)
+#IV
+K_class(1,A,Z,Y,n)
+
+#PULSE
+PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
+
+#LM and IVREG check
+
+############################################################################
+#COLUMN 5 & 6 : LWKLYWGE ~ YR20-YR29 + RACE MARRIED SMSA NEWENG MIDATL ENOCENT WNOCENT SOATL ESOCENT WSOCENT MT + EDUC (INSTRUMENTS = YR20-YR29 + QTR + RACE MARRIED SMSA NEWENG MIDATL ENOCENT WNOCENT SOATL ESOCENT WSOCENT MT)#
+############################################################################
 
 n <- nrow(Selected_Data)
-
+#Target
 Y <- Selected_Data %>% select(LWKLYWGE) %>%  as.matrix
-A <- Selected_Data %>% select(YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>% as.matrix
-Z <- Selected_Data %>% select(EDUC,YR20, YR21, YR22, YR23, YR24, YR25, YR26, YR27, YR28, YR29) %>%  as.matrix
+#Included Exogenous:
+A_1 <- Selected_Data %>% select(starts_with("YR"),RACE,MARRIED,SMSA,NEWENG,MIDATL,ENOCENT,WNOCENT,SOATL,ESOCENT,WSOCENT,MT) %>% as.matrix
+#All Exogenous
+A <- Selected_Data %>% select(starts_with("YR"),RACE,MARRIED,SMSA,NEWENG,MIDATL,ENOCENT,WNOCENT,SOATL,ESOCENT,WSOCENT,MT,starts_with("QTRxYR")) %>% as.matrix
+#Included Endogenous
+X <- Selected_Data %>% select(EDUC) %>%  as.matrix
+#Included (all)
+Z <- cbind(X,A_1)
 
-str(Y)
+#OLS
 K_class(0,A,Z,Y,n)
-K_class <- function(k,A,Z,Y,n){
-  P_A <- A%*%solve(t(A)%*%A)%*%t(A)
-  Wk <- t(Z) %*% ((1-k)*diag(n)+k* P_A )  %*%Z
-  a <- solve(Wk) %*% t(Z) %*% ( (1-k)*diag(n) + k*P_A ) %*% Y 
-  return(a)
-}
+#IV
+K_class(1,A,Z,Y,n)
 
-Selected_DataSelected_Data
+#PULSE
+PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
 
-lm(LWKLYWGE ~ EDUC + YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29,data=Selected_Data)
-ivreg(LWKLYWGE ~ EDUC + YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29 | YR20 + YR21+ YR22+ YR23+ YR24+ YR25+ YR26+ YR27+ YR28+ YR29,
-      data= Selected_Data)
+#LM and IVREG check
+lm(LWKLYWGE~EDUC+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
+ivfit<-ivreg(LWKLYWGE~EDUC+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1|RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9+QTRxYR10+QTRxYR11+QTRxYR12+QTRxYR13+QTRxYR14+QTRxYR15+QTRxYR16+QTRxYR17+QTRxYR18+QTRxYR19+QTRxYR20+QTRxYR21+QTRxYR22+QTRxYR23+QTRxYR24+QTRxYR25+QTRxYR26+QTRxYR27+QTRxYR28+QTRxYR29+QTRxYR30+QTRxYR31+QTRxYR32+QTRxYR33+QTRxYR34+QTRxYR35+QTRxYR36+QTRxYR37+QTRxYR38+QTRxYR39,data=Selected_Data,x=TRUE)
+summary(ivfit)
+anderson.rubin.ci(ivfit)
+
+############################################################################
+#COLUMN 7 & 8 : LWKLYWGE ~ YR20-YR29 + AGEQ + AGEQSQ RACE + MARRIED SMSA NEWENG MIDATL ENOCENT WNOCENT SOATL ESOCENT WSOCENT MT + EDUC (INSTRUMENTS = YR20-YR29 + QTR +  AGEQ + AGEQSQ RACE MARRIED SMSA NEWENG MIDATL ENOCENT WNOCENT SOATL ESOCENT WSOCENT MT)#
+############################################################################
+
+n <- nrow(Selected_Data)
+#Target
+Y <- Selected_Data %>% select(LWKLYWGE) %>%  as.matrix
+#Included Exogenous:
+A_1 <- Selected_Data %>% select(starts_with("YR"),AGEQ,AGEQSQ,RACE, MARRIED, SMSA, NEWENG, MIDATL, ENOCENT, WNOCENT, SOATL, ESOCENT, WSOCENT, MT) %>% as.matrix
+#All Exogenous
+A <- Selected_Data %>% select(starts_with("YR"),AGEQ,AGEQSQ,RACE, MARRIED, SMSA, NEWENG, MIDATL, ENOCENT, WNOCENT, SOATL, ESOCENT, WSOCENT, MT,starts_with("QTRxYR"),-QTRxYR38,-QTRxYR39) %>% as.matrix
+#Included Endogenous
+X <- Selected_Data %>% select(EDUC) %>%  as.matrix
+#Included (all)
+Z <- cbind(X,A_1)
+
+#OLS
+K_class(0,A,Z,Y,n)
+#IV
+K_class(1,A,Z,Y,n)
+
+#PULSE
+PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+
+lm(LWKLYWGE~EDUC+
+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+
+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
+ivfit<-ivreg(LWKLYWGE~EDUC+AGEQ+AGEQSQ+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+
+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1|AGEQ+AGEQSQ+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9+QTRxYR10+QTRxYR11+QTRxYR12+QTRxYR13+QTRxYR14+QTRxYR15+QTRxYR16+QTRxYR17+QTRxYR18+QTRxYR19+QTRxYR20+QTRxYR21+QTRxYR22+QTRxYR23+QTRxYR24+QTRxYR25+QTRxYR26+QTRxYR27+QTRxYR28+QTRxYR29+QTRxYR30+QTRxYR31+QTRxYR32+QTRxYR33+QTRxYR34+QTRxYR35+QTRxYR36+QTRxYR37+QTRxYR38+QTRxYR39,data=Selected_Data,x=TRUE)
+summary(ivfit)
+anderson.rubin.ci(ivfit)
+
