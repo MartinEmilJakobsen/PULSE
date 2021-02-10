@@ -12,7 +12,7 @@ library(stringr)
 library(AER)
 library(matlib)
 library(ivpack)
-
+library(kableExtra)
 
 getwd()
 source("../Estimators_Slow.R")
@@ -89,7 +89,8 @@ QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>%
          QTRxYR36= QTR3*YR6,
          QTRxYR37= QTR3*YR7,
          QTRxYR38= QTR3*YR8,
-         QTRxYR39= QTR3*YR9) 
+         QTRxYR39= QTR3*YR9) %>% 
+  mutate(Intercept = 1)
 #################################################################
 #################################################################
 #################################################################
@@ -117,13 +118,13 @@ X <- Selected_Data %>% select(EDUC) %>%  as.matrix
 Z <- cbind(X,A_1)
 
 #OLS
-K_class(0,A,Z,Y,n)
+m1.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m1.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(LWKLYWGE~EDUC+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
@@ -132,6 +133,7 @@ QTRxYR10+QTRxYR11+QTRxYR12+QTRxYR13+QTRxYR14+QTRxYR15+QTRxYR16+QTRxYR17+QTRxYR18
 summary(ivfit)
 
 anderson.rubin.ci(ivfit)
+
 
 ############################################################################
 #COLUMN 3 & 4 : LWKLYWGE ~ YR20-YR29 + AGEQ + AGEQSQ + EDUC (INSTRUMENTS = YR20-YR29 + QTR + AGEQ + AGEQSQ)#
@@ -149,12 +151,12 @@ X <- Selected_Data %>% select(EDUC) %>%  as.matrix
 Z <- cbind(X,A_1)
 
 #OLS
-K_class(0,A,Z,Y,n)
+m2.ols <-K_class(0,A,Z,Y,n)
 #IV
-K_class(1,A,Z,Y,n)
+m2.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
+m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
 
 #LM and IVREG check
 
@@ -175,12 +177,12 @@ X <- Selected_Data %>% select(EDUC) %>%  as.matrix
 Z <- cbind(X,A_1)
 
 #OLS
-K_class(0,A,Z,Y,n)
+m3.ols <- K_class(0,A,Z,Y,n)
 #IV
-K_class(1,A,Z,Y,n)
+m3.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
+m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
 
 #LM and IVREG check
 lm(LWKLYWGE~EDUC+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
@@ -205,12 +207,11 @@ X <- Selected_Data %>% select(EDUC) %>%  as.matrix
 Z <- cbind(X,A_1)
 
 #OLS
-K_class(0,A,Z,Y,n)
+m4.ols <- K_class(0,A,Z,Y,n)
 #IV
-K_class(1,A,Z,Y,n)
-
+m4.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 
 lm(LWKLYWGE~EDUC+
@@ -221,3 +222,65 @@ YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1|AGEQ+AGEQSQ+RACE+MARRIED+SMSA+NEWENG+M
 summary(ivfit)
 anderson.rubin.ci(ivfit)
 
+
+
+
+############################
+###### Custom model ########
+############################
+Selected_Data_Centered <- Selected_Data# %>% mutate_at(c("LWKLYWGE","AGEQ","AGEQSQ","EDUC"),.funs=function(x){x-mean(x)})
+
+n <- nrow(Selected_Data_Centered)
+#Target
+Y <- Selected_Data_Centered %>% select(LWKLYWGE) %>%  as.matrix
+#Included Exogenous:
+A_1 <- Selected_Data_Centered %>% select(AGEQ,AGEQSQ) %>% as.matrix
+#All Exogenous
+A <- Selected_Data_Centered %>% select(AGEQ,AGEQSQ,QTR1,QTR2,QTR3) %>% as.matrix
+#Included Endogenous
+X <- Selected_Data_Centered %>% select(EDUC) %>%  as.matrix
+#Included (all)
+Z <- cbind(X,A_1)
+
+lm(X~A)
+
+#OLS
+m5.ols <- K_class(0,A,Z,Y,n)
+#IV
+m5.tsls <- K_class(1,A,Z,Y,n)
+#PULSE
+m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+Table <- data.frame(
+  OLS = c(m1.ols["EDUC",],
+          m2.ols["EDUC",],
+          m3.ols["EDUC",],
+          m4.ols["EDUC",],
+          m5.ols["EDUC",]),
+  TSLS = c(m1.tsls["EDUC",],
+           m2.tsls["EDUC",],
+           m3.tsls["EDUC",],
+           m4.tsls["EDUC",],
+           m5.tsls["EDUC",]),
+  PULSE = c(m1.pulse["EDUC","LWKLYWGE"],
+            m2.pulse["EDUC","LWKLYWGE"],
+            m3.pulse["EDUC","LWKLYWGE"],
+            m4.pulse["EDUC","LWKLYWGE"],
+            m5.pulse["EDUC","LWKLYWGE"]),
+  message = c(m1.pulse["EDUC","m"],
+              m2.pulse["EDUC","m"],
+              m3.pulse["EDUC","m"],
+              m4.pulse["EDUC","m"],
+              m5.pulse["EDUC","m"]),
+  test = c(m1.pulse["EDUC","t"],
+           m2.pulse["EDUC","t"],
+           m3.pulse["EDUC","t"],
+           m4.pulse["EDUC","t"],
+           m5.pulse["EDUC","t"]),
+threshold = c(m1.pulse["EDUC","q"],
+           m2.pulse["EDUC","q"],
+           m3.pulse["EDUC","q"],
+           m4.pulse["EDUC","q"],
+           m5.pulse["EDUC","q"]))
+
+kbl(Table,format="latex",digits=4)

@@ -13,6 +13,8 @@ library(AER)
 library(matlib)
 library(ivpack)
 
+`%notin%` <- Negate(`%in%`)
+
 
 getwd()
 source("../Estimators_Slow.R")
@@ -28,7 +30,8 @@ COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)  %>
 
 
 
-Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1)
+Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) 
+
 
 ############################################################################
 #COLUMN 1 : logpgp95 ~ avexpr (INSTRUMENTS = logem4)#
@@ -47,15 +50,15 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m1.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m1.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
-
+#Fuller4
 K_class(FULLER_k(4,A,A_1,X,Y,n,2),A,Z,Y,n)
 
 
@@ -83,13 +86,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m2.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m2.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data)
@@ -117,13 +120,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m3.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m3.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data_woNeoEuropes)
@@ -148,17 +151,14 @@ X <- Selected_Data_woNeoEuropes %>% select(avexpr) %>%  as.matrix
 #Included (all)
 Z <- cbind(X,A_1)
 
-which(X<=16)
-X[which(X<=16)]
-
 #OLS
-K_class(0,A,Z,Y,n)
+m4.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m4.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woNeoEuropes)
@@ -185,13 +185,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m5.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m5.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data_woAfrica)
@@ -219,13 +219,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m6.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m6.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m6.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woAfrica)
@@ -255,13 +255,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m7.ols <-K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m7.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m7.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont,data=Selected_Data_wContinent)
@@ -290,13 +290,13 @@ Z <- cbind(X,A_1)
 
 
 #OLS
-K_class(0,A,Z,Y,n)
+m8.ols <- K_class(0,A,Z,Y,n)
 
 #IV
-K_class(1,A,Z,Y,n)
+m8.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
-PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+m8.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont+lat_abst,data=Selected_Data_wContinent)
@@ -340,3 +340,57 @@ ivfit<-ivreg(loghjypl~avexpr | logem4,data=Selected_Data_NAremoved,x=TRUE)
 summary(ivfit)
 
 anderson.rubin.ci(ivfit)
+
+#############
+Table <- data.frame(
+  OLS = c(m1.ols["avexpr",],
+          m2.ols["avexpr",],
+          m3.ols["avexpr",],
+          m4.ols["avexpr",],
+          m5.ols["avexpr",],
+          m6.ols["avexpr",],
+          m7.ols["avexpr",],
+          m8.ols["avexpr",]),
+  TSLS = c(m1.tsls["avexpr",],
+           m2.tsls["avexpr",],
+           m3.tsls["avexpr",],
+           m4.tsls["avexpr",],
+           m5.tsls["avexpr",],
+           m6.tsls["avexpr",],
+           m7.tsls["avexpr",],
+           m8.tsls["avexpr",]),
+  PULSE = c(m1.pulse["avexpr","logpgp95"],
+            m2.pulse["avexpr","logpgp95"],
+            m3.pulse["avexpr","logpgp95"],
+            m4.pulse["avexpr","logpgp95"],
+            m5.pulse["avexpr","logpgp95"],
+            m6.pulse["avexpr","logpgp95"],
+            m7.pulse["avexpr","logpgp95"],
+            m8.pulse["avexpr","logpgp95"]),
+  message = c(m1.pulse["avexpr","m"],
+              m2.pulse["avexpr","m"],
+              m3.pulse["avexpr","m"],
+              m4.pulse["avexpr","m"],
+              m5.pulse["avexpr","m"],
+              m6.pulse["avexpr","m"],
+              m7.pulse["avexpr","m"],
+              m8.pulse["avexpr","m"]),
+  test = c(m1.pulse["avexpr","t"],
+           m2.pulse["avexpr","t"],
+           m3.pulse["avexpr","t"],
+           m4.pulse["avexpr","t"],
+           m5.pulse["avexpr","t"],
+           m6.pulse["avexpr","t"],
+           m7.pulse["avexpr","t"],
+           m8.pulse["avexpr","t"]),
+  threshold = c(m1.pulse["avexpr","q"],
+                m2.pulse["avexpr","q"],
+                m3.pulse["avexpr","q"],
+                m4.pulse["avexpr","q"],
+                m5.pulse["avexpr","q"],
+                m6.pulse["avexpr","q"],
+                m7.pulse["avexpr","q"],
+                m8.pulse["avexpr","q"]))
+
+kbl(Table,format="latex",digits=4)
+

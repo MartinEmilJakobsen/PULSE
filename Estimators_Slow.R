@@ -10,7 +10,6 @@ inv <- function(A){
   return(r)
 }
 
-
 K_class <- function(k,A,Z,Y,n){
   QA<- qr.Q(qr(A))
   RA<- qr.R(qr(A))
@@ -60,13 +59,15 @@ FULLER_k <- function(alpha,A,A_1,X,Y,n,dA){
 Test_Statistic <- function(a,A,Z,Y,n,q){
   QA<- qr.Q(qr(A))
   RA<- qr.R(qr(A))
-  YtP_AY <- t(Y)%*%A%*%inv(RA)%*%t(QA)%*%Y
-  ZtP_AZ <- t(Z)%*%A%*%inv(RA)%*%t(QA)%*%Z
-  YtP_AZ <- t(Y)%*%A%*%inv(RA)%*%t(QA)%*%Z
-  YtY <- t(Y)%*%Y
-  ZtZ <- t(Z)%*%Z
-  YtZ <- t(Y)%*%Z
-  return((n-ncol(A)+q)*(YtP_AY+t(a)%*%ZtP_AZ%*%a-2%*%YtP_AZ%*%a)/(YtY+t(a)%*%ZtZ%*%a-2%*%YtZ%*%a))
+  # YtP_AY <- t(Y)%*%A%*%inv(RA)%*%t(QA)%*%Y
+  # ZtP_AZ <- t(Z)%*%A%*%inv(RA)%*%t(QA)%*%Z
+  # YtP_AZ <- t(Y)%*%A%*%inv(RA)%*%t(QA)%*%Z
+  # YtY <- t(Y)%*%Y
+  # ZtZ <- t(Z)%*%Z
+  # YtZ <- t(Y)%*%Z
+  #(n-ncol(A)+q)*(YtP_AY+t(a)%*%ZtP_AZ%*%a-2%*%YtP_AZ%*%a)/(YtY+t(a)%*%ZtZ%*%a-2%*%YtZ%*%a)
+  a<-(n-ncol(A)+q)*norm(A%*%(inv(RA)%*%t(QA)%*%Y)-A%*%(inv(RA)%*%t(QA)%*%Z%*%a),type="2")^2/norm(Y-Z%*%a,type="2")^2
+  return(a)
 }
 
 
@@ -86,12 +87,16 @@ PULSE <- function(A,A_1,X,Y,p,N,n)
   q <- qchisq(1-p,df=dA, ncp=0,lower.tail = TRUE,log.p = FALSE) 
   
   if(Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n,q)>= q){
-    message("TSLS rejected")
+    message(paste("TSLS rejected: T=",Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n,q),", q=",q))
     Fuller4Kappa <- FULLER_k(4,A,A_1,X,Y,n,dA)
     alpha <- K_class(Fuller4Kappa,A,Z,Y,n)
+    m <- "TSLS rejected"
+    t <- Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n,q)
   } else if(Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q)<= q){
-    message("OLS Accepted")
+    message(paste("OLS Accepted: T=",Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q),", q=",q))
     alpha <- K_class(0,A,Z,Y,n)
+    m <- "OLS Accepted"
+    t <- Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q)
   }
   else{
     
@@ -121,8 +126,10 @@ PULSE <- function(A,A_1,X,Y,p,N,n)
     Delta <- lmax-lmin
   }
   alpha <- K_class_lambda(lmax,A,Z,Y,n)
+  m <- ""
+  t<- Test_Statistic(alpha,A,Z,Y,n,q)
   }
-  return(alpha)
+  return(data.frame(alpha=alpha,m=m,t=t,q=q))
 }
 
 
