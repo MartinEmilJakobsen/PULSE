@@ -92,11 +92,15 @@ PULSE <- function(A,A_1,X,Y,p,N,n)
     alpha <- K_class(Fuller4Kappa,A,Z,Y,n)
     m <- "TSLS rejected"
     t <- Test_Statistic(K_class(1,A,Z,Y,n),A,Z,Y,n,q)
+    k <- Fuller4Kappa
+    l <- k/(1-k)
   } else if(Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q)<= q){
     message(paste("OLS Accepted: T=",Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q),", q=",q))
     alpha <- K_class(0,A,Z,Y,n)
     m <- "OLS Accepted"
     t <- Test_Statistic(K_class(0,A,Z,Y,n),A,Z,Y,n,q)
+    l <- 0 
+    k <- 0
   }
   else{
     
@@ -128,8 +132,10 @@ PULSE <- function(A,A_1,X,Y,p,N,n)
   alpha <- K_class_lambda(lmax,A,Z,Y,n)
   m <- ""
   t<- Test_Statistic(alpha,A,Z,Y,n,q)
+  l <- lmax
+  k <- l/(1+l)
   }
-  return(data.frame(alpha=alpha,m=m,t=t,q=q))
+  return(data.frame(alpha=alpha,m=m,t=t,q=q,l=l,k=k))
 }
 
 

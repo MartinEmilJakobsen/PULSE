@@ -515,6 +515,23 @@ summarydat <-data.frame(n=seq(2,40,2)) %>%
 summarydat %>%  print(n=60)
 
 
+########################################
+### FINDING KAPPAS FOR HELDOUT DATA  ###
+########################################
+
+fff <-function(Data,no){
+  HoldOutDataset <-  Data %>% 
+    as_tibble() %>%  
+    arrange(logem4) %>% 
+    head(-no/2) %>% 
+    tail(-no/2)
+  HeldOutSamples <- Data %>% 
+    filter(shortnam %notin% HoldOutDataset$shortnam)
+  
+  d <- data.frame(HoldOutVar = HoldOutDataset %>% summarize(var(logem4) ) %>% pull,HeldOutVar = HeldOutSamples %>%  summarize(var(logem4)) %>% pull)
+  return(d)
+}
+data.frame(no=seq(2,40,2)) %>% rowwise() %>%  mutate( g= list(fff(Selected_Data,no))) %>% unnest(cols=c(g)) %>% mutate(KappaForEquality = -(HoldOutVar-HeldOutVar)/HeldOutVar) %>% mutate(HeldOutOverHoldOut= HeldOutVar/HoldOutVar)
 
 
 

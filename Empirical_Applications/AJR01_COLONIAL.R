@@ -32,6 +32,7 @@ COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)  %>
 
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) 
 
+COLONIAL_Data %>%  filter(rich4==1)
 
 ############################################################################
 #COLUMN 1 : logpgp95 ~ avexpr (INSTRUMENTS = logem4)#
@@ -65,7 +66,7 @@ K_class(FULLER_k(4,A,A_1,X,Y,n,2),A,Z,Y,n)
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data)
 ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data,x=TRUE)
-summary(ivfit)
+summary(ivfit,diagnostics=TRUE)
 
 anderson.rubin.ci(ivfit)
 
@@ -196,7 +197,7 @@ m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data_woAfrica)
 ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data_woAfrica,x=TRUE)
-summary(ivfit)
+summary(ivfit,diagnostics=TRUE)
 
 anderson.rubin.ci(ivfit)
 
@@ -266,7 +267,7 @@ m7.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont,data=Selected_Data_wContinent)
 ivfit<-ivreg(logpgp95~avexpr + africa + asia + other_cont|logem4+africa + asia + other_cont,data=Selected_Data_wContinent,x=TRUE)
-summary(ivfit)
+summary(ivfit,diagnostics=TRUE)
 
 anderson.rubin.ci(ivfit)
 
@@ -301,7 +302,7 @@ m8.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont+lat_abst,data=Selected_Data_wContinent)
 ivfit<-ivreg(logpgp95~avexpr + africa + asia + other_cont+lat_abst| africa + asia + other_cont+logem4+lat_abst,data=Selected_Data_wContinent,x=TRUE)
-summary(ivfit)
+summary(ivfit, diagnostics = TRUE)
 
 anderson.rubin.ci(ivfit)
 

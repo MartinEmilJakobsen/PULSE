@@ -1,20 +1,6 @@
 ***********************************************************
 *Creates Table 4: IV Regressions of Log GDP per Capita
 ***********************************************************
-clear
-capture log close
-cd G:\daron\colonial_origins
-log using maketable4, replace
-
-/*Data Files Used
-	maketable4.dta
-	
-*Data Files Created as Final Product
-	none
-	
-*Data Files Created as Intermediate Product
-	none*/
-	
 
 use maketable4, clear
 keep if baseco==1

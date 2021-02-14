@@ -100,7 +100,7 @@ Proximity_Data <- read.delim(file="Data/nls.dat",sep="",header=FALSE)  %>% renam
 
 Selected_Data <- Proximity_Data 
 
-Proximity_Data %>%  summary()
+Proximity_Data %>% 
 
 ############################################################################
 # w/o family dummies
