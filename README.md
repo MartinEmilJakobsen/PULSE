@@ -9,6 +9,8 @@ PULSE(A,A_1,X,Y,p,N)
 
 where A,A_1,X,Z,Y are the datamatrices (rowwise obeservations) for: all exogenous, included exogenous, included endogenous and target endogeous, respectively. If there is no included exogenous variables, then set A_1= "none". p is the $p_{min}$ for PULSE rejection threshold. 1/N is the precision of the binary search (in the lambda space).
 
+## Replicate Empirical Analysis
+See readme.txt in sub-folder /Empirical_Analysis
 
 ## Replicate experiments
 
