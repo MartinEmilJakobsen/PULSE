@@ -122,5 +122,8 @@ temp %>%
 ggsave("Plots/Dist_Robustness.png", plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
+ggsave("Plots/Dist_Robustness.eps", plot = last_plot(), device = cairo_ps, path = NULL,
+       scale = 1, width = 12, height = 6, units = c("in"),
+       dpi = 200, limitsize = FALSE)
 
 

@@ -14,9 +14,6 @@ Data_Location <- "Data/Experiment_Univariate_nSim_15000_nObsPerSim_50_100_150_20
 ID <- "20200716034113"
 dat <- readRDS(file=Data_Location) 
 
-Data_Location <- "Data/Experiment_Univariate_nSim_15000_nObsPerSim_50_100_150_20200822000552.RDS"
-ID <- "20200822000552"
-dat <- readRDS(file=Data_Location) 
 
 
 
@@ -70,7 +67,7 @@ ggplot(data = RMSE_plotdata %>% filter(!(rho %in% c("0.01","0.05")) ) )+
   ylab(expression(paste("Relative Change in RMSE")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_RMSE_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_RMSE_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -105,7 +102,7 @@ ggplot(data = MeanBias_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_MeanBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_MeanBias_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -140,7 +137,7 @@ ggplot(data = MedianBias_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_MedianBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_MedianBias_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -172,7 +169,7 @@ ggplot(data = Variance_plotdata)+
   ylab(expression(paste("Relative Change in Variance")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_Variance_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_Variance_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -206,7 +203,7 @@ ggplot(data = IQR_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_IQR_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_IQR_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 6, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -217,10 +214,6 @@ ggsave(paste0("Plots/Univariate_IQR_",ID,".png"), plot = last_plot(), device = N
 #######  Alternative Settings #######
 #####################################
 
-# Read data
-# Data_Location <- "Data/Experiment_Univariate_AlternativeSetups_nSim_5000_nObsPerSim_50_100_20200716105326.RDS"
-# ID <- "20200716105326"
-# dat <- readRDS(file=Data_Location) 
 
 Data_Location <- "Data/Experiment_Univariate_AlternativeSetups_nSim_15000_nObsPerSim_50_100_20200822000650.RDS"
 ID <- "20200822000650"
@@ -267,7 +260,7 @@ ggplot(data = RMSE_plotdata)+
   ylab(expression(paste("Relative Change in RMSE")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_AlternativeSetups_RMSE_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_AlternativeSetups_RMSE_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -304,7 +297,7 @@ ggplot(data = MeanBias_plotdata)+
 
 
 
-ggsave(paste0("Plots/Univariate_AlternativeSetups_MeanBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_AlternativeSetups_MeanBias_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -340,7 +333,7 @@ ggplot(data = MedianBias_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_AlternativeSetups_MedianBias_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_AlternativeSetups_MedianBias_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -373,7 +366,7 @@ ggplot(data = Variance_plotdata)+
   ylab(expression(paste("Relative Change in Variance")))+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
-ggsave(paste0("Plots/Univariate_AlternativeSetups_Variance_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_AlternativeSetups_Variance_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -408,6 +401,6 @@ ggplot(data = IQR_plotdata)+
   theme(plot.margin = unit(c(0,0.8,0,0), "cm"))
 
 
-ggsave(paste0("Plots/Univariate_AlternativeSetups_IQR_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+ggsave(paste0("Plots/Univariate_AlternativeSetups_IQR_",ID,".eps"), plot = last_plot(), device = "eps", path = NULL,
        scale = 1, width = 12, height = 18, units = c("in"),
        dpi = 200, limitsize = FALSE)

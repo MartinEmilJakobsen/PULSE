@@ -103,6 +103,9 @@ ggplot(data=PlotData) +
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_",ID,".eps"), plot = last_plot(), device = cairo_ps, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
 
 
 ########################
@@ -122,6 +125,9 @@ ggplot(data=PlotData) +
   theme(legend.position="bottom")
 
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_pmSuperior_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_pmSuperior_",ID,".eps"), plot = last_plot(), device = cairo_ps, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -236,6 +242,9 @@ plot <- arrangeGrob(p1,p2, ncol=1,widths=c(1),left = textGrob("Relative Change i
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior",ID,"_",ID2,".png"), plot = plot, device = NULL, path = NULL,
        scale = 1, width = 12, height = 13, units = c("in"),
        dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE05_MSE_Superior",ID,"_",ID2,".eps"), plot = plot, device = cairo_ps, path = NULL,
+       scale = 1, width = 12, height = 13, units = c("in"),
+       dpi = 200, limitsize = FALSE)
 
 
 #########################
@@ -317,7 +326,9 @@ ggplot(data=PlotData) +
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE10_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
-
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta00_PULSE10_",ID,".eps"), plot = last_plot(), device = cairo_ps, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
 
 
 #########################
@@ -399,6 +410,9 @@ ggplot(data=PlotData) +
   theme(legend.position="bottom")
 
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta11_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta11_PULSE05_",ID,".eps"), plot = last_plot(), device = cairo_ps, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
 
@@ -486,6 +500,10 @@ ggplot(data=PlotData) +
 ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".png"), plot = last_plot(), device = NULL, path = NULL,
        scale = 1, width = 12, height = 9, units = c("in"),
        dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_VaryingConfounding_Beta-11_PULSE05_",ID,".eps"), plot = last_plot(), device = cairo_ps, path = NULL,
+       scale = 1, width = 12, height = 9, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+
 
 ###########################
 #### Fixed confounding ####
@@ -631,5 +649,8 @@ p6 <- ggplot(data=PlotData %>% filter(Type=="PULSE05 to Fuller4",Cov %in% c(6)))
 plot <- arrangeGrob(p1,p2,p3,p4,p5,p6, ncol=1,left = textGrob("Relative Change in Performance Measure", rot = 90, vjust = 0))
 
 ggsave(paste0("Plots/Multivariate_FixedConfounding_",ID,".png"), plot =plot, device = NULL, path = NULL,
+       scale = 1, width = 12, height = 13, units = c("in"),
+       dpi = 200, limitsize = FALSE)
+ggsave(paste0("Plots/Multivariate_FixedConfounding_",ID,".eps"), plot =plot, device = cairo_ps, path = NULL,
        scale = 1, width = 12, height = 13, units = c("in"),
        dpi = 200, limitsize = FALSE)
