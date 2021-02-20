@@ -12,7 +12,7 @@ library(stringr)
 library(AER)
 library(matlib)
 library(ivpack)
-
+library(kableExtra)
 
 `%notin%` <- Negate(`%in%`)
 
@@ -35,11 +35,31 @@ COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)
 
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) %>% mutate_at(c("lat_abst","avexpr","logpgp95","logem4"),.funs=function(x){x-mean(x)}) %>% mutate(Intercept=1)
 
+
+### FINDING OPTIMAL KAPPAS FOR HELDOUT DATA  ###
+fff <-function(Data,no){
+  HoldOutDataset <-  Data %>% 
+    as_tibble() %>%  
+    arrange(logem4) %>% 
+    head(-no/2) %>% 
+    tail(-no/2)
+  HeldOutSamples <- Data %>% 
+    filter(shortnam %notin% HoldOutDataset$shortnam)
+  
+  d <- data.frame(HoldOutVar = HoldOutDataset %>% summarize(var(logem4) ) %>% pull,HeldOutVar = HeldOutSamples %>%  summarize(var(logem4)) %>% pull)
+  return(d)
+}
+KappasForEquality <- data.frame(no=seq(4,32,2)) %>% rowwise() %>%  mutate( g= list(fff(Selected_Data,no))) %>% unnest(cols=c(g)) %>% mutate(KappaForEquality = -(HoldOutVar-HeldOutVar)/HeldOutVar) %>% mutate(HeldOutOverHoldOut= HeldOutVar/HoldOutVar) %>% 
+  rename(InSampleVar=HoldOutVar,
+         OutOfSampleVar=HeldOutVar,
+         OutOfSampleVarOverInSampleVar = HeldOutOverHoldOut) %>% 
+  select(no,InSampleVar,OutOfSampleVar,OutOfSampleVarOverInSampleVar,KappaForEquality)
+
+
  #############################################################################################
 # MODEL M1 WITHOUT INTERCEPT: logpgp95 ~ avexpr  (INSTRUMENTS = logem4)#
 #############################################################################################
 holdoutextremes <- function(Data,noExtremes){
-
     HoldOutDataset <- Data %>% 
     as_tibble() %>%  
     arrange(logem4) %>% 
@@ -66,16 +86,48 @@ holdoutextremes <- function(Data,noExtremes){
   iv <- K_class(1,A,Z,Y,n)
   #PULSE
   pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+  #Fuller4
+  fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,1),A,Z,Y,n)
+  #KclassOpti 
   
+  kopt <- K_class(KappasForEquality[(noExtremes-2)/2,"KappaForEquality"],A,Z,Y,n)
+  
+  Worst4Cases1 <- HeldOutSamples %>% 
+    arrange(logem4) %>% 
+    head(2) 
+  Worst4Cases2 <- HeldOutSamples %>%
+    arrange(logem4) %>% 
+    tail(2) 
+  
+  WorstCases <- bind_rows(Worst4Cases1,Worst4Cases2) %>% 
+    select(logpgp95,avexpr,Intercept) %>% 
+    mutate(resOLS = logpgp95- (avexpr*ols["avexpr",]),
+           resIV = logpgp95- (avexpr*iv["avexpr",]),
+           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"]),
+           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"]),
+           resOPT = logpgp95- (avexpr*kopt["1","logpgp95"] )) %>% 
+    summarize(OLS = sum(resOLS^2)/n(),
+              IV = sum(resIV^2)/n(),
+              PULSE = sum(resPULSE^2)/n(),
+              FULLER4 = sum(resFULLER4^2)/n(),
+              OPT = sum(resOPT^2)/n())
   
   MSPE <- HeldOutSamples %>%  
     select(logpgp95,avexpr,Intercept) %>% 
     mutate(resOLS = logpgp95- (avexpr*ols["avexpr",]),
            resIV = logpgp95- (avexpr*iv["avexpr",]),
-           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"])) %>% 
+           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"]),
+           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"]),
+           resOPT = logpgp95- (avexpr*kopt["1","logpgp95"])) %>% 
     summarize(OLS = sum(resOLS^2)/n(),
               IV = sum(resIV^2)/n(),
               PULSE = sum(resPULSE^2)/n(),
+              FULLER4 = sum(resFULLER4^2)/n(),
+              OPT = sum(resOPT^2)/n(),
+              WOLS = max(resOLS^2),
+              WIV = max(resIV^2),
+              WPULSE = max(resPULSE^2),
+              WFULLER4 = max(resFULLER4^2),
               ORDER = case_when(OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
                                 OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
                                 OLS == PULSE & PULSE <= IV ~ "PULSE=OLS<IV",
@@ -92,19 +144,31 @@ holdoutextremes <- function(Data,noExtremes){
               PULSEmIV = PULSE -IV,
               coef.OLS = ols["avexpr",],
               coef.IV = iv["avexpr",],
-              coef.PULSE = pulse["avexpr","logpgp95"]) %>% 
+              coef.PULSE = pulse["avexpr","logpgp95"],
+              coef.FULLER4 = fuller4["avexpr","logpgp95"],
+              kappa.FULLER4 = FULLER_k(4,A,A_1,X,Y,n,1),
+              WorstCaseOLS = WorstCases$OLS,
+              WorstCaseIV = WorstCases$IV,
+              WorstCasePULSE = WorstCases$PULSE,
+              WorstCaseFULLER4 = WorstCases$FULLER4,
+              WorstCaseOPT = WorstCases$OPT) %>% 
     mutate(t=pulse["avexpr","t"],q=pulse["avexpr","q"],l=pulse["avexpr","l"],k=pulse["avexpr","k"])
   return(MSPE)
 }
 
-summarydat <-data.frame(n=seq(2,40,2)) %>% 
+summarydat <-data.frame(n=seq(4,32,2)) %>% 
   rowwise() %>% 
   mutate(order=list(holdoutextremes(Selected_Data,n)))%>%
-  unnest(cols=c(order))
+  unnest(cols=c(order)) %>% 
+  mutate(kappa.PULSE = l/(1+l))
 
-summarydat %>%  select(n,OLS,IV,PULSE,coef.OLS,coef.IV,coef.PULSE,ORDER) %>% 
+
+
+
+
+summarydat %>% 
+  bind_cols(.,KappasForEquality) %>%  select(n,coef.OLS,coef.IV,coef.PULSE,coef.FULLER4,kappa.PULSE,kappa.FULLER4,KappaForEquality,OLS,IV,PULSE,FULLER4,WOLS,WIV,WPULSE,WFULLER4) %>% 
   kbl(.,format="latex",digits=4)
-
 
 #################
 #Hold out random#
@@ -137,30 +201,20 @@ holdoutrandom <- function(Data,percentage){
   iv <- K_class(1,A,Z,Y,n)
   #PULSE
   pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+  #fuller4
+  fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,1),A,Z,Y,n)
   
   
   MSPE <- HeldOutSamples %>%  
     select(logpgp95,avexpr,Intercept) %>% 
     mutate(resOLS = logpgp95- (avexpr*ols["avexpr",]),
            resIV = logpgp95- (avexpr*iv["avexpr",]),
-           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"])) %>% 
+           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"]),
+           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"])) %>% 
     summarize(OLS = sum(resOLS^2)/n(),
               IV = sum(resIV^2)/n(),
               PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(pulse["avexpr","l"]== 0 & PULSE <= IV ~ "PULSE=OLS<IV",
-                                pulse["avexpr","l"]== 0 & OLS <= IV ~ "PULSE=OLS<IV",
-                                IV <= OLS & pulse["avexpr","l"] == 0 ~ "IV<OLS=PULSE",
-                                IV <= PULSE & pulse["avexpr","l"] == 0 ~ "IV<PULSE=OLS",
-                                OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV) %>% 
+              FULLER4 = sum(resFULLER4^2)/n()) %>% 
     mutate(t=pulse["avexpr","t"],q=pulse["avexpr","q"],l=pulse["avexpr","l"],k=pulse["avexpr","k"])
   return(MSPE)
 }
@@ -169,44 +223,37 @@ norep <- 1000
 
 summarydat <-data.frame(n=seq(1,norep,1)) %>% 
   rowwise() %>% 
-  mutate(order=list(holdoutrandom(Selected_Data,0.9)))
+  mutate(dat=list(holdoutrandom(Selected_Data,0.9)))
 
 
-summarydat %>%
-  unnest(cols=c(order)) %>% 
-  mutate(OLSeqPULSE = I(t!=q)) %>% 
-  group_by(ORDER,OLSeqPULSE) %>% 
+MSPEORDERS <- summarydat %>%
+  unnest(cols=c(dat)) %>%  
+  gather(key="Type",value="MSPE",c(OLS,IV,PULSE,FULLER4)) %>% 
+  arrange(MSPE) %>% 
+  group_by(n) %>% 
+  summarise(n=max(n),
+            t=max(t),
+            q=max(q),
+            l=max(l),
+            k=max(k),
+            ORDER = paste0(Type,collapse="<")) 
+  
+  summarydat %>%
+  unnest(cols=c(dat)) %>% 
+  left_join(.,MSPEORDERS %>% select(n,ORDER),by="n") %>% 
+  group_by(ORDER) %>% 
   summarise(count= n(),
             WMSPE.OLS = max(OLS),
             WMSPE.iv = max(IV),
             WMSPE.pulse = max(PULSE),
+            WMSPE.fuller4 = max(FULLER4),
             OLS = mean(OLS),
             PULSE = mean(PULSE),
-            IV = mean(IV)
+            IV = mean(IV),
+            FULLER4 = mean(FULLER4)
             ) %>% 
-  mutate(FirstDiff = case_when(ORDER == "OLS<IV<PULSE" ~ IV-OLS,
-                               ORDER == "OLS<PULSE<IV" ~  PULSE- OLS,
-                               ORDER == "OLS=PULSE<IV" ~ PULSE - OLS,
-                               ORDER == "IV<PULSE<OLS" ~ PULSE - IV,
-                               ORDER == "IV<PULSE=OLS" ~ PULSE -IV,
-                               ORDER == "IV<OLS<PULSE" ~ OLS - IV,
-                               ORDER == "IV<OLS=PULSE" ~ OLS - IV,
-                               ORDER == "PULSE<OLS<IV" ~ OLS - PULSE,
-                               ORDER == "PULSE=OLS<IV" ~ OLS -PULSE,
-                               ORDER == "PULSE<IV<OLS" ~ IV-PULSE),
-         SecondDiff = case_when(ORDER == "OLS<IV<PULSE" ~ PULSE -IV,
-                                ORDER == "OLS<PULSE<IV" ~  IV -PULSE,
-                                ORDER == "OLS=PULSE<IV" ~ IV-PULSE,
-                                ORDER == "IV<PULSE<OLS" ~ OLS-PULSE,
-                                ORDER == "IV<PULSE=OLS" ~ OLS-PULSE,
-                                ORDER == "IV<OLS<PULSE" ~ PULSE-OLS,
-                                ORDER == "IV<OLS=PULSE" ~ PULSE-OLS,
-                                ORDER == "PULSE<OLS<IV" ~ IV-OLS,
-                                ORDER == "PULSE=OLS<IV" ~ IV-OLS,
-                                ORDER == "PULSE<IV<OLS" ~ OLS-IV)) %>% 
-  
   mutate(Percentage = 100*count/norep) %>% 
-  select(ORDER,Percentage,OLS,IV,PULSE,WMSPE.OLS,WMSPE.iv,WMSPE.pulse) %>% 
+  select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)
 
 ################################################
@@ -298,81 +345,9 @@ Selected_Data <- QOB_Data  %>% filter(COHORT == "30.39") %>%
 
 Selected_Data_Centered <- Selected_Data %>% mutate_at(c("LWKLYWGE","AGEQ","AGEQSQ","EDUC"),.funs=function(x){x-mean(x)}) %>%  mutate(ID=1:n())
 
-
-##### CUSTOM MODEL M4 #### 
-# MAYBE DELETE THIS.
-
-holdoutextremes <- function(Data,noExtremes){
-  HoldOutDataset <- Data %>% 
-    as_tibble() %>%  
-    arrange(AGEQ) %>% 
-    head(-noExtremes/2) %>% 
-    tail(-noExtremes/2)
-  HeldOutSamples <- Data %>% 
-    filter(ID %notin% HoldOutDataset$ID)
-
-  
-    n <- nrow(HoldOutDataset)
-  #Target
-  Y <- HoldOutDataset %>% select(LWKLYWGE) %>%  as.matrix
-  #Included Exogenous:
-  A_1 <- HoldOutDataset %>% select(AGEQ,AGEQSQ) %>% as.matrix
-  #All Exogenous
-  A <- HoldOutDataset %>% select(AGEQ,AGEQSQ,QTR1,QTR2,QTR3) %>% as.matrix
-  #Included Endogenous
-  X <- HoldOutDataset %>% select(EDUC) %>%  as.matrix
-  #Included (all)
-  Z <- cbind(X,A_1)
-  
-  
-  #OLS
-  ols <- K_class(0,A,Z,Y,n)
-  #IV
-  iv <- K_class(1,A,Z,Y,n)
-  #PULSE
-  pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
-  
-  
-  MSPE <- HeldOutSamples %>%  
-    select(LWKLYWGE,AGEQ,AGEQSQ,QTR1,QTR2,QTR3,EDUC,Intercept) %>% 
-    mutate(resOLS = LWKLYWGE - (EDUC*ols["EDUC",]+AGEQ*ols["AGEQ",]+AGEQSQ*ols["AGEQSQ",]),
-           resIV = LWKLYWGE - (EDUC*iv["EDUC",]+AGEQ*iv["AGEQ",]+AGEQSQ*iv["AGEQSQ",]),
-           resPULSE = LWKLYWGE - (EDUC*pulse["EDUC","LWKLYWGE"]+AGEQ*pulse["AGEQ","LWKLYWGE"]+AGEQSQ*pulse["AGEQSQ","LWKLYWGE"])) %>% 
-    summarize(OLS = sum(resOLS^2)/n(),
-              IV = sum(resIV^2)/n(),
-              PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                OLS == PULSE & PULSE <= IV ~ "PULSE=OLS<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= PULSE & PULSE == OLS ~ "IV<PULSE=OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                IV <= OLS & OLS == PULSE ~ "IV<OLS=PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE == OLS & OLS <= IV ~ "PULSE=OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV,
-              coef.OLS = ols["EDUC",],
-              coef.IV = iv["EDUC",],
-              coef.PULSE = pulse["EDUC","LWKLYWGE"])%>% 
-    mutate(t=pulse["EDUC","t"],q=pulse["EDUC","q"])
-  return(MSPE)
-}
-
-summarydat <-data.frame(n=c(50000,100000)) %>% 
-  rowwise() %>% 
-  mutate(order=list(holdoutextremes(Selected_Data_Centered,n)))%>%
-  unnest(cols=c(order))
-
-summarydat %>%  select(n,OLS,IV,PULSE,ORDER,coef.OLS,coef.IV,coef.PULSE) %>% 
-  kbl(.,format="latex",digits=4)
-
-
-######## Hold out random #########
-
+#################
+#Hold out random#
+#################
 
 
 set.seed(1)
@@ -403,76 +378,72 @@ holdoutrandom <- function(Data,percentage){
   iv <- K_class(1,A,Z,Y,n)
   #PULSE
   pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
-  
+  #fuller4
+  fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,1),A,Z,Y,n)
   
   MSPE <- HeldOutSamples %>%  
     select(LWKLYWGE,EDUC,YR0 ,  YR1 ,  YR2 ,  YR3 ,  YR4 ,  YR5  , YR6  , YR7 ,  YR8,   YR9) %>% 
-    mutate(resOLS = LWKLYWGE- (EDUC*ols["EDUC",]+ YR0*ols["YR0",]+YR1*ols["YR1",]+YR2*ols["YR2",]+YR3*ols["YR3",]+YR4*ols["YR4",]+YR5*ols["YR5",]+YR6*ols["YR6",]+YR7*ols["YR7",]+YR8*ols["YR8",]+YR9*ols["YR9",]),
-           resIV = LWKLYWGE- (EDUC*iv["EDUC",]+ YR0*iv["YR0",]+YR1*iv["YR1",]+YR2*iv["YR2",]+YR3*iv["YR3",]+YR4*iv["YR4",]+YR5*iv["YR5",]+YR6*iv["YR6",]+YR7*iv["YR7",]+YR8*iv["YR8",]+YR9*iv["YR9",]),
-           resPULSE = LWKLYWGE- (EDUC*pulse["EDUC","LWKLYWGE"]+ YR0*pulse["YR0","LWKLYWGE"]+YR1*pulse["YR1","LWKLYWGE"]+YR2*pulse["YR2","LWKLYWGE"]+YR3*pulse["YR3","LWKLYWGE"]+YR4*pulse["YR4","LWKLYWGE"]+YR5*pulse["YR5","LWKLYWGE"]+YR6*pulse["YR6","LWKLYWGE"]+YR7*pulse["YR7","LWKLYWGE"]+YR8*pulse["YR8","LWKLYWGE"]+YR9*pulse["YR9","LWKLYWGE"])) %>% 
+    mutate(
+      resOLS = LWKLYWGE- (EDUC*ols["EDUC",]+ YR0*ols["YR0",]+YR1*ols["YR1",]+YR2*ols["YR2",]+YR3*ols["YR3",]+YR4*ols["YR4",]+YR5*ols["YR5",]+YR6*ols["YR6",]+YR7*ols["YR7",]+YR8*ols["YR8",]+YR9*ols["YR9",]),
+      resIV = LWKLYWGE- (EDUC*iv["EDUC",]+ YR0*iv["YR0",]+YR1*iv["YR1",]+YR2*iv["YR2",]+YR3*iv["YR3",]+YR4*iv["YR4",]+YR5*iv["YR5",]+YR6*iv["YR6",]+YR7*iv["YR7",]+YR8*iv["YR8",]+YR9*iv["YR9",]),
+      resPULSE = LWKLYWGE- (EDUC*pulse["EDUC","LWKLYWGE"]+ YR0*pulse["YR0","LWKLYWGE"]+YR1*pulse["YR1","LWKLYWGE"]+YR2*pulse["YR2","LWKLYWGE"]+YR3*pulse["YR3","LWKLYWGE"]+YR4*pulse["YR4","LWKLYWGE"]+YR5*pulse["YR5","LWKLYWGE"]+YR6*pulse["YR6","LWKLYWGE"]+YR7*pulse["YR7","LWKLYWGE"]+YR8*pulse["YR8","LWKLYWGE"]+YR9*pulse["YR9","LWKLYWGE"]),
+      resFULLER4 = LWKLYWGE- (EDUC*fuller4["EDUC","LWKLYWGE"]+ YR0*fuller4["YR0","LWKLYWGE"]+YR1*fuller4["YR1","LWKLYWGE"]+YR2*fuller4["YR2","LWKLYWGE"]+YR3*fuller4["YR3","LWKLYWGE"]+YR4*fuller4["YR4","LWKLYWGE"]+YR5*fuller4["YR5","LWKLYWGE"]+YR6*fuller4["YR6","LWKLYWGE"]+YR7*fuller4["YR7","LWKLYWGE"]+YR8*fuller4["YR8","LWKLYWGE"]+YR9*fuller4["YR9","LWKLYWGE"])) %>% 
     summarize(OLS = sum(resOLS^2)/n(),
               IV = sum(resIV^2)/n(),
               PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(pulse["EDUC","l"]== 0 & PULSE <= IV ~ "PULSE=OLS<IV",
-                                pulse["EDUC","l"]== 0 & OLS <= IV ~ "PULSE=OLS<IV",
-                                IV <= OLS & pulse["EDUC","l"] == 0 ~ "IV<OLS=PULSE",
-                                IV <= PULSE & pulse["EDUC","l"] == 0 ~ "IV<PULSE=OLS",
-                                OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV) %>% 
+              FULLER4 = sum(resFULLER4^2)/n()) %>% 
     mutate(t=pulse["EDUC","t"],q=pulse["EDUC","q"],l=pulse["EDUC","l"],k=pulse["EDUC","k"])
   return(MSPE)
 }
 
 norep <- 1000
 
-Selected_Data_subset <- Selected_Data %>% sample_frac(0.01)
+Selected_Data_subset <- Selected_Data_Centered %>% sample_frac(0.01)
 
 summarydat <-data.frame(n=seq(1,norep,1)) %>% 
   rowwise() %>% 
   mutate(order=list(holdoutrandom(Selected_Data_subset  ,0.9)))
 
 
-AverageStats <- summarydat %>%
+MSPEORDERS <- summarydat %>%
+  unnest(cols=c(order)) %>%  
+  gather(key="Type",value="MSPE",c(OLS,IV,PULSE,FULLER4)) %>% 
+  arrange(MSPE) %>% 
+  group_by(n) %>% 
+  summarise(n=max(n),
+            t=max(t),
+            q=max(q),
+            l=max(l),
+            k=max(k),
+            ORDER = paste0(Type,collapse="<")) %>% 
+  mutate(ORDER=case_when(ORDER == "PULSE<OLS<IV<FULLER4" ~ "PULSE=OLS<IV<FULLER4",
+                         ORDER == "OLS<PULSE<IV<FULLER4" ~ "PULSE=OLS<IV<FULLER4",
+                         ORDER == "IV<FULLER4<PULSE<OLS" ~ "IV<FULLER4<PULSE=OLS",
+                         ORDER == "IV<OLS<PULSE<FULLER4" ~ "IV<PULSE=OLS<FULLER4",
+                         ORDER == "IV<PULSE<OLS<FULLER4" ~ "IV<PULSE=OLS<FULLER4",
+                         ORDER == "FULLER4<IV<OLS<PULSE" ~ "FULLER4<IV<PULSE=OLS",
+                         ORDER == "IV<FULLER4<OLS<PULSE" ~ "IV<FULLER4<PULSE=OLS",
+                         
+                         ))
+
+
+summarydat %>%
   unnest(cols=c(order)) %>% 
+  left_join(.,MSPEORDERS %>% select(n,ORDER),by="n") %>% 
+  ungroup %>% 
   group_by(ORDER) %>% 
   summarise(count= n(),
+            WMSPE.OLS = quantile(OLS,probs=0.9),
+            WMSPE.iv = quantile(IV,probs=0.9),
+            WMSPE.pulse = quantile(PULSE,probs=0.9),
+            WMSPE.fuller4 = quantile(FULLER4,probs=0.9),
             OLS = mean(OLS),
             PULSE = mean(PULSE),
-            IV = mean(IV)  ) %>% 
-  mutate(Percentage = 100*count/norep)
- 
-
-WorstCaseAverageStats <- bind_rows(
-summarydat %>%
-  unnest(cols=c(order)) %>%
-  filter(IV <= PULSE & IV <= OLS) %>% 
-  arrange(desc(IV)) %>% 
-  filter(row_number() <= n()*0.1) %>% 
-  group_by(ORDER) %>% 
-  summarise(OLS = mean(OLS),
-            PULSE = mean(PULSE),
-            IV = mean(IV))
-,
-summarydat %>%
-  unnest(cols=c(order)) %>%
-  filter(OLS <= IV ) %>% 
-  arrange(desc(IV)) %>% 
-  filter(row_number() <= n()*0.1) %>% 
-  group_by(ORDER) %>% 
-  summarise(OLS = mean(OLS),
-            PULSE = mean(PULSE),
-            IV = mean(IV)))
-
-left_join(AverageStats,WorstCaseAverageStats,by="ORDER") %>% 
-select(ORDER,Percentage,OLS.x,IV.x,PULSE.x,OLS.y,IV.y,PULSE.y) %>% 
+            IV = mean(IV),
+            FULLER4 = mean(FULLER4)
+  ) %>% 
+  mutate(Percentage = 100*count/norep) %>% 
+  select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)
 
 ################################################
@@ -483,8 +454,6 @@ select(ORDER,Percentage,OLS.x,IV.x,PULSE.x,OLS.y,IV.y,PULSE.y) %>%
 ################################################
 ################################################
 
-
-#### HOLD OUT EXTREME AGES ####
 
 getwd()
 source("../Estimators_Slow.R")
@@ -564,177 +533,6 @@ Proximity_Data <- read.delim(file="Data/nls.dat",sep="",header=FALSE)  %>% renam
   mutate(ID = 1:n())
 
 
-
-
-holdoutextremes <- function(Data,noExtremes){
-  
-  HoldOutDataset <- Data %>% 
-    as_tibble() %>%  
-    arrange(age) %>% 
-    head(-noExtremes/2) %>% 
-    tail(-noExtremes/2)
-  HeldOutSamples <- Data %>% 
-    filter(ID %notin% HoldOutDataset$ID)
-  
-  
-  
-  n <- nrow(HoldOutDataset)
-  #Target
-  Y <- HoldOutDataset %>% select(lwage76)  %>% as.matrix
-  #Included Exogenous:
-  A_1 <- HoldOutDataset %>% select(Intercept) %>%  as.matrix
-  #All Exogenous
-  A <- HoldOutDataset %>% select(nearc4,age,agesq,Intercept) %>% as.matrix
-  #Included Endogenous
-  X <- HoldOutDataset %>% select(ed76,exp,expsq) %>%  as.matrix
-  #Included (all)
-  Z <- cbind(X,A_1)
-  
-  
-  #OLS
-  ols <- K_class(0,A,Z,Y,n)
-  #IV
-  iv <- K_class(1,A,Z,Y,n)
-  #PULSE
-  pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
-  
-  
-  MSPE <- HeldOutSamples %>%  
-    select(lwage76,Intercept,ed76,exp,expsq) %>% 
-    mutate(resOLS = lwage76 - (ed76*ols["ed76",]+exp*ols["exp",]+expsq*ols["expsq",]+Intercept*ols["Intercept",]),
-           resIV = lwage76 - (ed76*iv["ed76",]+exp*iv["exp",]+expsq*iv["expsq",]+Intercept*iv["Intercept",]),
-           resPULSE = lwage76 - (ed76*pulse["ed76","lwage76"]+exp*pulse["exp","lwage76"]+expsq*pulse["expsq","lwage76"]+Intercept*pulse["Intercept","lwage76"])) %>% 
-    summarize(OLS = sum(resOLS^2)/n(),
-              IV = sum(resIV^2)/n(),
-              PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                OLS == PULSE & PULSE <= IV ~ "PULSE=OLS<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= PULSE & PULSE == OLS ~ "IV<PULSE=OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                IV <= OLS & OLS == PULSE ~ "IV<OLS=PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE == OLS & OLS <= IV ~ "PULSE=OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV,
-              coef.OLS = ols["ed76",],
-              coef.IV = iv["ed76",],
-              coef.PULSE = pulse["ed76","lwage76"]) %>% 
-    mutate(t=pulse["Intercept","t"],q=pulse["Intercept","q"])
-  return(MSPE)
-}
-
-summarydat <-data.frame(n= c(250,500,750,1000,1250,1500,1750,2000,2250,2300)) %>%  #seq(500,2500 ,500)) %>% 
-  rowwise() %>% 
-  mutate(order=list(holdoutextremes(Proximity_Data,n)))%>%
-  unnest(cols=c(order))
-
-summarydat %>%  select(n,OLS,IV,PULSE,ORDER,coef.OLS,coef.IV,coef.PULSE) %>% 
-  kbl(.,format="latex",digits=4)
-
-#### HOLD OUT EXTREME IQs ####
-
-
-##############################################################
-# MODEL M3 # with kww test score and IQ as its instrument
-##############################################################
-holdoutextremes <- function(Data,noExtremes){
-  
-  HoldOutDataset <- Data %>% 
-    as_tibble() %>%  
-    arrange(iq) %>% 
-    head(-noExtremes/2) %>% 
-    tail(-noExtremes/2)
-  HeldOutSamples <- Data %>% 
-    filter(ID %notin% HoldOutDataset$ID)
-  
-
-  
-  n <- nrow(HoldOutDataset)
-  #Target
-  Y <- HoldOutDataset %>% select(lwage76)  %>% as.matrix
-  #Included Exogenous:
-  A_1 <- HoldOutDataset %>% select(black,smsa76r,reg76r,smsa66r,reg662,reg663,reg664,reg665,reg666,reg667,reg668,reg669,Intercept,daded,momed,nodaded,nomomed ,f1,f2,f3,f4,f5,f6,f7,f8,momdad14,sinmom14) %>%  as.matrix
-  #All Exogenous
-  A <- HoldOutDataset %>% select(nearc4,age,agesq,iq,black,smsa76r,reg76r,smsa66r,reg662,reg663,reg664,reg665,reg666,reg667,reg668,reg669,Intercept,daded,momed,nodaded,nomomed ,f1,f2,f3,f4,f5,f6,f7,f8,momdad14,sinmom14) %>% as.matrix
-  #Included Endogenous
-  X <- HoldOutDataset %>% select(ed76,exp,expsq,kww) %>%  as.matrix
-  #Included (all)
-  Z <- cbind(X,A_1)
-  
-  #OLS
-  ols <- K_class(0,A,Z,Y,n)
-  #IV
-  iv <- K_class(1,A,Z,Y,n)
-  #PULSE
-  pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
-  
-  
-  MSPE <- HeldOutSamples %>%  
-    select(lwage76,black,smsa76r,reg76r,smsa66r,reg662,reg663,reg664,reg665,reg666,reg667,reg668,reg669,Intercept,ed76,exp,expsq,kww) %>% 
-    mutate(resOLS = lwage76 - (ed76*ols["ed76",]+exp*ols["exp",]+expsq*ols["expsq",]+black*ols["black",]+smsa76r*ols["smsa76r",]+reg76r*ols["reg76r",]+smsa66r*ols["smsa66r",]+reg662*ols["reg662",]+reg663*ols["reg663",]+reg664*ols["reg664",]+reg665*ols["reg665",]+reg666*ols["reg666",]+reg667*ols["reg667",]+reg668*ols["reg668",]+reg669*ols["reg669",]+Intercept*ols["Intercept",]+kww*ols["kww",]),
-           resIV = lwage76 - (ed76*iv["ed76",]+exp*iv["exp",]+expsq*iv["expsq",]+black*iv["black",]+smsa76r*iv["smsa76r",]+reg76r*iv["reg76r",]+smsa66r*iv["smsa66r",]+reg662*iv["reg662",]+reg663*iv["reg663",]+reg664*iv["reg664",]+reg665*iv["reg665",]+reg666*iv["reg666",]+reg667*iv["reg667",]+reg668*iv["reg668",]+reg669*iv["reg669",]+Intercept*iv["Intercept",]+kww*iv["kww",]),
-           resPULSE = lwage76 - (ed76*pulse["ed76","lwage76"]+exp*pulse["exp","lwage76"]+expsq*pulse["expsq","lwage76"]+black*pulse["black","lwage76"]+smsa76r*pulse["smsa76r","lwage76"]+reg76r*pulse["reg76r","lwage76"]+smsa66r*pulse["smsa66r","lwage76"]+reg662*pulse["reg662","lwage76"]+reg663*pulse["reg663","lwage76"]+reg664*pulse["reg664","lwage76"]+reg665*pulse["reg665","lwage76"]+reg666*pulse["reg666","lwage76"]+reg667*pulse["reg667","lwage76"]+reg668*pulse["reg668","lwage76"]+reg669*pulse["reg669","lwage76"]+Intercept*pulse["Intercept","lwage76"]++kww*pulse["kww","lwage76"])) %>% 
-    summarize(OLS = sum(resOLS^2)/n(),
-              IV = sum(resIV^2)/n(),
-              PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                OLS == PULSE & PULSE <= IV ~ "PULSE=OLS<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= PULSE & PULSE == OLS ~ "IV<PULSE=OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                IV <= OLS & OLS == PULSE ~ "IV<OLS=PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE == OLS & OLS <= IV ~ "PULSE=OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV,
-              coef.OLS = ols["ed76",],
-              coef.IV = iv["ed76",],
-              coef.PULSE = pulse["ed76","lwage76"]) %>% 
-    mutate(t=pulse["ed76","t"],q=pulse["ed76","q"],l=pulse["ed76","l"],k=pulse["ed76","k"])
-  return(MSPE)
-}
-
-summarydat <-data.frame(n=c(100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800)) %>% 
-  rowwise() %>% 
-  mutate(order=list(holdoutextremes(Proximity_Data %>%  filter(kww!=0,iq!=0),n)))%>%
-  unnest(cols=c(order))
-
-summarydat %>%  select(n,OLS,IV,PULSE,coef.OLS,coef.IV,coef.PULSE,ORDER) %>% 
-  kbl(.,format="latex",digits=4)
-
-
-
-########################################
-### FINDING KAPPAS FOR HELDOUT DATA  ###
-########################################
-
-fff <-function(Data,no){
-  HoldOutDataset <-  Data %>% 
-    as_tibble() %>%  
-    arrange(iq) %>% 
-    head(-no/2) %>% 
-    tail(-no/2)
-  HeldOutSamples <- Data %>% 
-    filter(ID %notin% HoldOutDataset$ID)
-  
-  d <- data.frame(HoldOutVar = HoldOutDataset %>% summarize(var(iq) ) %>% pull,HeldOutVar = HeldOutSamples %>%  summarize(var(iq)) %>% pull)
-  return(d)
-}
-data.frame(no=seq(100,1800,100)) %>% rowwise() %>%  mutate( g= list(fff(Proximity_Data %>%  filter(kww!=0,iq!=0),no))) %>% unnest(cols=c(g)) %>% mutate(KappaForEquality = -(HoldOutVar-HeldOutVar)/HeldOutVar) %>% mutate(HeldOutOverHoldOut= HeldOutVar/HoldOutVar)
-
-
-
-
-
 #### HOLD OUT RANDOM ####
 
 set.seed(1)
@@ -766,37 +564,21 @@ holdoutrandom <- function(Data,percentage){
   iv <- K_class(1,A,Z,Y,n)
   #PULSE
   pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
-  
-  #OLS
-  ols <- K_class(0,A,Z,Y,n)
-  #IV
-  iv <- K_class(1,A,Z,Y,n)
-  #PULSE
-  pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+  #fuller4
+  fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,1),A,Z,Y,n)
+ 
   
   
 MSPE <- HeldOutSamples %>%  
     select(lwage76,black,smsa76r,reg76r,smsa66r,reg662,reg663,reg664,reg665,reg666,reg667,reg668,reg669,Intercept,ed76,exp,expsq) %>% 
     mutate(resOLS = lwage76 - (ed76*ols["ed76",]+exp*ols["exp",]+expsq*ols["expsq",]+black*ols["black",]+smsa76r*ols["smsa76r",]+reg76r*ols["reg76r",]+smsa66r*ols["smsa66r",]+reg662*ols["reg662",]+reg663*ols["reg663",]+reg664*ols["reg664",]+reg665*ols["reg665",]+reg666*ols["reg666",]+reg667*ols["reg667",]+reg668*ols["reg668",]+reg669*ols["reg669",]+Intercept*ols["Intercept",]),
            resIV = lwage76 - (ed76*iv["ed76",]+exp*iv["exp",]+expsq*iv["expsq",]+black*iv["black",]+smsa76r*iv["smsa76r",]+reg76r*iv["reg76r",]+smsa66r*iv["smsa66r",]+reg662*iv["reg662",]+reg663*iv["reg663",]+reg664*iv["reg664",]+reg665*iv["reg665",]+reg666*iv["reg666",]+reg667*iv["reg667",]+reg668*iv["reg668",]+reg669*iv["reg669",]+Intercept*iv["Intercept",]),
-           resPULSE = lwage76 - (ed76*pulse["ed76","lwage76"]+exp*pulse["exp","lwage76"]+expsq*pulse["expsq","lwage76"]+black*pulse["black","lwage76"]+smsa76r*pulse["smsa76r","lwage76"]+reg76r*pulse["reg76r","lwage76"]+smsa66r*pulse["smsa66r","lwage76"]+reg662*pulse["reg662","lwage76"]+reg663*pulse["reg663","lwage76"]+reg664*pulse["reg664","lwage76"]+reg665*pulse["reg665","lwage76"]+reg666*pulse["reg666","lwage76"]+reg667*pulse["reg667","lwage76"]+reg668*pulse["reg668","lwage76"]+reg669*pulse["reg669","lwage76"]+Intercept*pulse["Intercept","lwage76"])) %>% 
+           resPULSE = lwage76 - (ed76*pulse["ed76","lwage76"]+exp*pulse["exp","lwage76"]+expsq*pulse["expsq","lwage76"]+black*pulse["black","lwage76"]+smsa76r*pulse["smsa76r","lwage76"]+reg76r*pulse["reg76r","lwage76"]+smsa66r*pulse["smsa66r","lwage76"]+reg662*pulse["reg662","lwage76"]+reg663*pulse["reg663","lwage76"]+reg664*pulse["reg664","lwage76"]+reg665*pulse["reg665","lwage76"]+reg666*pulse["reg666","lwage76"]+reg667*pulse["reg667","lwage76"]+reg668*pulse["reg668","lwage76"]+reg669*pulse["reg669","lwage76"]+Intercept*pulse["Intercept","lwage76"]),
+           resFULLER4 = lwage76 - (ed76*fuller4["ed76","lwage76"]+exp*fuller4["exp","lwage76"]+expsq*fuller4["expsq","lwage76"]+black*fuller4["black","lwage76"]+smsa76r*fuller4["smsa76r","lwage76"]+reg76r*fuller4["reg76r","lwage76"]+smsa66r*fuller4["smsa66r","lwage76"]+reg662*fuller4["reg662","lwage76"]+reg663*fuller4["reg663","lwage76"]+reg664*fuller4["reg664","lwage76"]+reg665*fuller4["reg665","lwage76"]+reg666*fuller4["reg666","lwage76"]+reg667*fuller4["reg667","lwage76"]+reg668*fuller4["reg668","lwage76"]+reg669*fuller4["reg669","lwage76"]+Intercept*fuller4["Intercept","lwage76"])) %>% 
     summarize(OLS = sum(resOLS^2)/n(),
               IV = sum(resIV^2)/n(),
               PULSE = sum(resPULSE^2)/n(),
-              ORDER = case_when(pulse["ed76","l"]== 0 & PULSE <= IV ~ "PULSE=OLS<IV",
-                                pulse["ed76","l"]== 0 & OLS <= IV ~ "PULSE=OLS<IV",
-                                IV <= OLS & pulse["ed76","l"] == 0 ~ "IV<OLS=PULSE",
-                                IV <= PULSE & pulse["ed76","l"] == 0 ~ "IV<PULSE=OLS",
-                                OLS <= IV & IV <= PULSE ~ "OLS<IV<PULSE",
-                                OLS < PULSE & PULSE <= IV ~ "OLS<PULSE<IV",
-                                IV <= PULSE & PULSE < OLS ~ "IV<PULSE<OLS",
-                                IV <= OLS & OLS <= PULSE ~ "IV<OLS<PULSE",
-                                PULSE < OLS & OLS <= IV ~ "PULSE<OLS<IV",
-                                PULSE <= IV & IV <= OLS ~ "PULSE<IV<OLS"
-              ),
-              OLSmIV = OLS-IV,
-              OLSmPULSE = OLS-PULSE,
-              PULSEmIV = PULSE -IV) %>% 
+              FULLER4 = sum(resFULLER4^2)/n()) %>% 
     mutate(t=pulse["ed76","t"],q=pulse["ed76","q"],l=pulse["ed76","l"],k=pulse["ed76","k"])
   return(MSPE)
 }
@@ -809,37 +591,47 @@ summarydat <-data.frame(n=seq(1,norep,1)) %>%
   mutate(order=list(holdoutrandom(Proximity_Data  ,0.9)))
 
 
-AverageStats <- summarydat %>%
+MSPEORDERS <- summarydat %>%
+  unnest(cols=c(order)) %>%  
+  gather(key="Type",value="MSPE",c(OLS,IV,PULSE,FULLER4)) %>% 
+  arrange(MSPE) %>% 
+  group_by(n) %>% 
+  summarise(n=max(n),
+            t=max(t),
+            q=max(q),
+            l=max(l),
+            k=max(k),
+            ORDER = paste0(Type,collapse="<")) %>% 
+  mutate(ORDER=case_when(ORDER == "PULSE<OLS<FULLER4<IV" ~ "PULSE=OLS<FULLER4<IV",
+                         ORDER == "PULSE<OLS<IV<FULLER4" ~ "PULSE=OLS<IV<FULLER4",
+                         ORDER == "OLS<PULSE<FULLER4<IV" ~ "PULSE=OLS<FULLER4<IV",
+                         ORDER == "IV<FULLER4<OLS<PULSE" ~ "IV<FULLER4<PULSE=OLS",
+                         ORDER == "OLS<PULSE<IV<FULLER4" ~ "PULSE=OLS<IV<FULLER4",
+                         ORDER == "FULLER4<OLS<PULSE<IV" ~ "FULLER4<PULSE=OLS<IV",
+                         ORDER == "FULLER4<PULSE<OLS<IV" ~ "FULLER4<PULSE=OLS<IV",
+                         ORDER == "FULLER4<IV<PULSE<OLS" ~ "FULLER4<IV<PULSE=OLS",
+                         ORDER == "IV<FULLER4<PULSE<OLS" ~ "IV<FULLER4<PULSE=OLS",
+                         ORDER == "FULLER4<IV<OLS<PULSE" ~ "FULLER4<IV<PULSE=OLS",
+                         ORDER == "IV<OLS<PULSE<FULLER4" ~ "IV<PULSE=OLS<FULLER4",
+                         
+  ))
+
+
+summarydat %>%
   unnest(cols=c(order)) %>% 
+  left_join(.,MSPEORDERS %>% select(n,ORDER),by="n") %>% 
+  ungroup %>% 
   group_by(ORDER) %>% 
   summarise(count= n(),
+            WMSPE.OLS = quantile(OLS,probs=0.9),
+            WMSPE.iv = quantile(IV,probs=0.9),
+            WMSPE.pulse = quantile(PULSE,probs=0.9),
+            WMSPE.fuller4 = quantile(FULLER4,probs=0.9),
             OLS = mean(OLS),
             PULSE = mean(PULSE),
-            IV = mean(IV)  ) %>% 
-  mutate(Percentage = 100*count/norep)
-
-
-WorstCaseAverageStats <- bind_rows(
-  summarydat %>%
-    unnest(cols=c(order)) %>%
-    filter(IV <= PULSE & IV <= OLS) %>% 
-    arrange(desc(IV)) %>% 
-    filter(row_number() <= n()*0.1) %>% 
-    group_by(ORDER) %>% 
-    summarise(OLS = mean(OLS),
-              PULSE = mean(PULSE),
-              IV = mean(IV))
-  ,
-  summarydat %>%
-    unnest(cols=c(order)) %>%
-    filter(OLS <= IV ) %>% 
-    arrange(desc(IV)) %>% 
-    filter(row_number() <= n()*0.1) %>% 
-    group_by(ORDER) %>% 
-    summarise(OLS = mean(OLS),
-              PULSE = mean(PULSE),
-              IV = mean(IV)))
-
-left_join(AverageStats,WorstCaseAverageStats,by="ORDER") %>% 
-  select(ORDER,Percentage,OLS.x,IV.x,PULSE.x,OLS.y,IV.y,PULSE.y) %>% 
+            IV = mean(IV),
+            FULLER4 = mean(FULLER4)
+  ) %>% 
+  mutate(Percentage = 100*count/norep) %>% 
+  select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)

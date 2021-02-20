@@ -33,8 +33,8 @@ LIML_k <- function(A,A_1,X,Y,n){
   
   QA<- qr.Q(qr(A))
   RA<- qr.R(qr(A))
-  if(nrow(A_1) == 1){
-    W_1 = t(solve(Y,X))%*%solve(Y,X)
+  if(norm(A_1) == 0){
+    W_1 = t(cbind(Y,X))%*%cbind(Y,X)
   }
   else{
 #    M_A_1 <- diag(n)- A_1%*%solve(t(A_1)%*%(A_1))%*%t(A_1)
