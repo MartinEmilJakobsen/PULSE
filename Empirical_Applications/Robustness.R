@@ -635,3 +635,33 @@ summarydat %>%
   mutate(Percentage = 100*count/norep) %>% 
   select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)
+
+#AverageReduction
+
+
+
+tdat <- summarydat %>%
+  unnest(cols=c(order)) %>% 
+  left_join(.,summarydat %>%
+              unnest(cols=c(order)) %>%  
+              gather(key="Type",value="MSPE",c(OLS,IV)) %>% 
+              arrange(MSPE) %>% 
+              group_by(n) %>% 
+              summarise(n=max(n),
+                        t=max(t),
+                        q=max(q),
+                        l=max(l),
+                        k=max(k),
+                        ORDER = paste0(Type,collapse="<")) %>% select(n,ORDER),by="n") %>% 
+  ungroup %>% 
+  group_by(ORDER) %>% 
+  summarise(count= n(),
+            WMSPE.OLS = quantile(OLS,probs=0.9),
+            WMSPE.iv = quantile(IV,probs=0.9),
+            OLS = mean(OLS),
+            IV = mean(IV)
+  ) %>% 
+  mutate(Percentage = 100*count/norep)
+
+
+(tdat[2,"IV"]-tdat[2,"OLS"])/(tdat[1,"OLS"]-tdat[1,"IV"])
