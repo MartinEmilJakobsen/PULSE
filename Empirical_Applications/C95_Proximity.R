@@ -127,6 +127,9 @@ m1.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+#fuller4
+dA <- ncol(A)
+m1.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(lwage76~ed76+exp+expsq+black+smsa76r+reg76r+smsa66r+reg662+reg663+reg664+reg665+reg666+reg667+reg668+reg669,data=Selected_Data)
@@ -160,6 +163,9 @@ m2.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+#fuller4
+dA <- ncol(A)
+m2.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(lwage76~ed76+exp+expsq+black+smsa76r+reg76r+smsa66r+reg662+reg663+reg664+reg665+reg666+reg667+reg668+reg669+daded+momed+nodaded+nomomed +f1+f2+f3+f4+f5+f6+f7+f8+momdad14+sinmom14,data=Selected_Data)
@@ -196,64 +202,34 @@ m3.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
-
-
-
-############################################################################
-# Custom model
-############################################################################
-Selected_Data <- Proximity_Data
-
-
-n <- nrow(Selected_Data)
-#Target
-Y <- Selected_Data %>% select(lwage76)  %>% as.matrix
-#Included Exogenous:
-A_1 <- Selected_Data %>% select(Intercept) %>%  as.matrix
-#All Exogenous
-A <- Selected_Data %>% select(nearc4,age,agesq,Intercept) %>% as.matrix
-#Included Endogenous
-X <- Selected_Data %>% select(ed76,exp,expsq) %>%  as.matrix
-#Included (all)
-Z <- cbind(X,A_1)
-
-lm(X ~A)
-#OLS
-m4.ols <- K_class(0,A,Z,Y,n)
-
-#IV
-m4.tsls <- K_class(1,A,Z,Y,n)
-
-#PULSE
-m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+#fuller4
+dA <- ncol(A)
+m3.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 
 #############
 Table <- data.frame(
   OLS = c(m1.ols["ed76",],
           m2.ols["ed76",],
-          m3.ols["ed76",],
-          m4.ols["ed76",]),
+          m3.ols["ed76",]),
   TSLS = c(m1.tsls["ed76",],
            m2.tsls["ed76",],
-           m3.tsls["ed76",],
-           m4.tsls["ed76",]),
+           m3.tsls["ed76",]),
+  FULLER4 = c(m1.fuller4["ed76",],
+              m2.fuller4["ed76",],
+              m3.fuller4["ed76",]),
   PULSE = c(m1.pulse["ed76","lwage76"],
             m2.pulse["ed76","lwage76"],
-            m3.pulse["ed76","lwage76"],
-            m4.pulse["ed76","lwage76"]),
+            m3.pulse["ed76","lwage76"]),
   message = c(m1.pulse["ed76","m"],
               m2.pulse["ed76","m"],
-              m3.pulse["ed76","m"],
-              m4.pulse["ed76","m"]),
+              m3.pulse["ed76","m"]),
   test = c(m1.pulse["ed76","t"],
            m2.pulse["ed76","t"],
-           m3.pulse["ed76","t"],
-           m4.pulse["ed76","t"]),
+           m3.pulse["ed76","t"]),
   threshold = c(m1.pulse["ed76","q"],
                 m2.pulse["ed76","q"],
-                m3.pulse["ed76","q"],
-                m4.pulse["ed76","q"]))
+                m3.pulse["ed76","q"]))
 
 Table
 

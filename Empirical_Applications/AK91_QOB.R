@@ -126,6 +126,10 @@ m1.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
+#fuller4
+dA <- ncol(A)
+m1.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 #LM and IVREG check
 lm(LWKLYWGE~EDUC+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
 ivfit<-ivreg(LWKLYWGE~EDUC+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1|YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9+
@@ -158,6 +162,10 @@ m2.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
 
+#fuller4
+dA <- ncol(A)
+m2.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 #LM and IVREG check
 
 ############################################################################
@@ -183,6 +191,10 @@ m3.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=1000,n)
+
+#fuller4
+dA <- ncol(A)
+m3.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(LWKLYWGE~EDUC+RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+YR0+YR1+YR2+YR3+YR4+YR5+YR6+YR7+YR8+YR9-1,data=Selected_Data)
@@ -213,6 +225,10 @@ m4.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
+#fuller4
+dA <- ncol(A)
+m4.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 
 lm(LWKLYWGE~EDUC+
 RACE+MARRIED+SMSA+NEWENG+MIDATL+ENOCENT+WNOCENT+SOATL+ESOCENT+WSOCENT+MT+
@@ -225,62 +241,36 @@ anderson.rubin.ci(ivfit)
 
 
 
-############################
-###### Custom model ########
-############################
-Selected_Data_Centered <- Selected_Data# %>% mutate_at(c("LWKLYWGE","AGEQ","AGEQSQ","EDUC"),.funs=function(x){x-mean(x)})
-
-n <- nrow(Selected_Data_Centered)
-#Target
-Y <- Selected_Data_Centered %>% select(LWKLYWGE) %>%  as.matrix
-#Included Exogenous:
-A_1 <- Selected_Data_Centered %>% select(AGEQ,AGEQSQ) %>% as.matrix
-#All Exogenous
-A <- Selected_Data_Centered %>% select(AGEQ,AGEQSQ,QTR1,QTR2,QTR3) %>% as.matrix
-#Included Endogenous
-X <- Selected_Data_Centered %>% select(EDUC) %>%  as.matrix
-#Included (all)
-Z <- cbind(X,A_1)
-
-lm(X~A)
-
-#OLS
-m5.ols <- K_class(0,A,Z,Y,n)
-#IV
-m5.tsls <- K_class(1,A,Z,Y,n)
-#PULSE
-m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+#Generating table for Angrist and Krueger (1991)
 
 Table <- data.frame(
   OLS = c(m1.ols["EDUC",],
           m2.ols["EDUC",],
           m3.ols["EDUC",],
-          m4.ols["EDUC",],
-          m5.ols["EDUC",]),
+          m4.ols["EDUC",]),
   TSLS = c(m1.tsls["EDUC",],
            m2.tsls["EDUC",],
            m3.tsls["EDUC",],
-           m4.tsls["EDUC",],
-           m5.tsls["EDUC",]),
+           m4.tsls["EDUC",]),
+  FULLER4 = c(m1.fuller4["EDUC",],
+           m2.fuller4["EDUC",],
+           m3.fuller4["EDUC",],
+           m4.fuller4["EDUC",]),
   PULSE = c(m1.pulse["EDUC","LWKLYWGE"],
             m2.pulse["EDUC","LWKLYWGE"],
             m3.pulse["EDUC","LWKLYWGE"],
-            m4.pulse["EDUC","LWKLYWGE"],
-            m5.pulse["EDUC","LWKLYWGE"]),
+            m4.pulse["EDUC","LWKLYWGE"]),
   message = c(m1.pulse["EDUC","m"],
               m2.pulse["EDUC","m"],
               m3.pulse["EDUC","m"],
-              m4.pulse["EDUC","m"],
-              m5.pulse["EDUC","m"]),
+              m4.pulse["EDUC","m"]),
   test = c(m1.pulse["EDUC","t"],
            m2.pulse["EDUC","t"],
            m3.pulse["EDUC","t"],
-           m4.pulse["EDUC","t"],
-           m5.pulse["EDUC","t"]),
+           m4.pulse["EDUC","t"]),
 threshold = c(m1.pulse["EDUC","q"],
            m2.pulse["EDUC","q"],
            m3.pulse["EDUC","q"],
-           m4.pulse["EDUC","q"],
-           m5.pulse["EDUC","q"]))
+           m4.pulse["EDUC","q"]))
 
 kbl(Table,format="latex",digits=4)

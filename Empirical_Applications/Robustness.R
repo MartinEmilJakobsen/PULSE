@@ -167,7 +167,7 @@ summarydat <-data.frame(n=seq(4,32,2)) %>%
 
 
 summarydat %>% 
-  bind_cols(.,KappasForEquality) %>%  select(n,coef.OLS,coef.IV,coef.PULSE,coef.FULLER4,kappa.PULSE,kappa.FULLER4,KappaForEquality,OLS,IV,PULSE,FULLER4,WOLS,WIV,WPULSE,WFULLER4) %>% 
+  bind_cols(.,KappasForEquality) %>%  select(n,coef.OLS,coef.IV,coef.PULSE,coef.FULLER4,kappa.PULSE,kappa.FULLER4,KappaForEquality,OLS,IV,PULSE,FULLER4) %>% 
   kbl(.,format="latex",digits=4)
 
 #################
@@ -225,6 +225,7 @@ summarydat <-data.frame(n=seq(1,norep,1)) %>%
   rowwise() %>% 
   mutate(dat=list(holdoutrandom(Selected_Data,0.9)))
 
+#OLD table
 
 MSPEORDERS <- summarydat %>%
   unnest(cols=c(dat)) %>%  
@@ -255,6 +256,78 @@ MSPEORDERS <- summarydat %>%
   mutate(Percentage = 100*count/norep) %>% 
   select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)
+  
+  
+#Percentages for only consistent estimators  
+MSPEORDERS <- summarydat %>%
+    unnest(cols=c(dat)) %>%  
+    gather(key="Type",value="MSPE",c(IV,PULSE,FULLER4)) %>% 
+    arrange(MSPE) %>% 
+    group_by(n) %>% 
+    summarise(n=max(n),
+              t=max(t),
+              q=max(q),
+              l=max(l),
+              k=max(k),
+              ORDER = paste0(Type,collapse="<")) 
+  
+  summarydat %>%
+    unnest(cols=c(dat)) %>% 
+    left_join(.,MSPEORDERS %>% select(n,ORDER),by="n") %>% 
+    group_by(ORDER) %>% 
+    summarise(count= n(),
+              WMSPE.OLS = max(OLS),
+              WMSPE.iv = max(IV),
+              WMSPE.pulse = max(PULSE),
+              WMSPE.fuller4 = max(FULLER4),
+              OLS = mean(OLS),
+              PULSE = mean(PULSE),
+              IV = mean(IV),
+              FULLER4 = mean(FULLER4)
+    ) %>% 
+    mutate(Percentage = 100*count/norep) %>% 
+    select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
+    kbl(.,format="latex",digits=3)  
+  
+#Table in paper: 
+summarydat %>%
+    unnest(cols=c(dat))  %>% 
+    mutate(OT = I(OLS <= IV),
+           OP = I(OLS <=PULSE),
+           OF = I(OLS<=FULLER4),
+           TO = I(IV<=OLS),
+           TP = I(IV<=PULSE),
+           TF = I(IV<=FULLER4),
+           PO = I(PULSE <= OLS),
+           PT = I(PULSE<= IV),
+           PF = I(PULSE<=FULLER4),
+           FO = I(FULLER4<=OLS),
+           FT = I(FULLER4<=IV),
+           FP = I(FULLER4<=PULSE)) %>% 
+    summarise(OA =sum(OF*OP*OF)/n(),
+              OT= sum(OT)/n(),
+              OP= sum(OP)/n(),
+              OF= sum(OF)/n(),
+              TA = sum(TO*TP*TF)/n(),
+              TO= sum(TO)/n(),
+              TP= sum(TP)/n(),
+              TF= sum(TF)/n(),
+              PA = sum(PO*PT*PF)/n(),
+              PO= sum(PO)/n(),
+              PT= sum(PT)/n(),
+              PF= sum(PF)/n(),
+              FA = sum(FO*FT*FP)/n(),
+              FO= sum(FO)/n(),
+              FT= sum(FT)/n(),
+              FP= sum(FP)/n()) %>%  
+    unlist(., use.names=FALSE) %>% 
+    sapply(.,function(x){x*100}) %>% 
+    matrix(.,ncol=4,byrow=TRUE) %>% 
+    as.data.frame(.,row.names = c("OLS","TSLS","PULSE","FUL")) %>%
+    select(V2,V3,V4,V1) %>% 
+    mutate_at(c("V1","V2","V3","V4"),.funs=function(x){round(x,digits=1) %>% paste0(.,'%')})  %>% 
+    kbl(,format="latex",digits=3,row.names = TRUE)
+  
 
 ################################################
 ################################################

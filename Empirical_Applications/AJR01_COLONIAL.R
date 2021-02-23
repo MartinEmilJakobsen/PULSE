@@ -59,8 +59,9 @@ m1.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
-#Fuller4
-K_class(FULLER_k(4,A,A_1,X,Y,n,2),A,Z,Y,n)
+#fuller4
+dA <- ncol(A)
+m1.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 
 #LM and IVREG check
@@ -94,6 +95,10 @@ m2.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+#fuller4
+dA <- ncol(A)
+m2.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data)
@@ -129,6 +134,10 @@ m3.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
+#fuller4
+dA <- ncol(A)
+m3.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data_woNeoEuropes)
 ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data_woNeoEuropes,x=TRUE)
@@ -160,6 +169,10 @@ m4.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+#fuller4
+dA <- ncol(A)
+m4.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woNeoEuropes)
@@ -194,6 +207,10 @@ m5.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
+#fuller4
+dA <- ncol(A)
+m5.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 #LM and IVREG check
 lm(logpgp95~avexpr,data=Selected_Data_woAfrica)
 ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data_woAfrica,x=TRUE)
@@ -227,6 +244,10 @@ m6.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m6.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+#fuller4
+dA <- ncol(A)
+m6.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woAfrica)
@@ -264,6 +285,10 @@ m7.tsls <- K_class(1,A,Z,Y,n)
 #PULSE
 m7.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
+#fuller4
+dA <- ncol(A)
+m7.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
+
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont,data=Selected_Data_wContinent)
 ivfit<-ivreg(logpgp95~avexpr + africa + asia + other_cont|logem4+africa + asia + other_cont,data=Selected_Data_wContinent,x=TRUE)
@@ -298,6 +323,10 @@ m8.tsls <- K_class(1,A,Z,Y,n)
 
 #PULSE
 m8.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
+
+#fuller4
+dA <- ncol(A)
+m8.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
 #LM and IVREG check
 lm(logpgp95~avexpr + africa + asia + other_cont+lat_abst,data=Selected_Data_wContinent)
@@ -360,6 +389,14 @@ Table <- data.frame(
            m6.tsls["avexpr",],
            m7.tsls["avexpr",],
            m8.tsls["avexpr",]),
+  FULLER4 = c(m1.fuller4["avexpr",],
+           m2.fuller4["avexpr",],
+           m3.fuller4["avexpr",],
+           m4.fuller4["avexpr",],
+           m5.fuller4["avexpr",],
+           m6.fuller4["avexpr",],
+           m7.fuller4["avexpr",],
+           m8.fuller4["avexpr",]),
   PULSE = c(m1.pulse["avexpr","logpgp95"],
             m2.pulse["avexpr","logpgp95"],
             m3.pulse["avexpr","logpgp95"],
