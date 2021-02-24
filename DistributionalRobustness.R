@@ -127,3 +127,65 @@ ggsave("Plots/Dist_Robustness.eps", plot = last_plot(), device = cairo_ps, path 
        dpi = 200, limitsize = FALSE)
 
 
+
+#Varying sample-size median
+
+
+set.seed(1)
+
+sim <- function(samplesize,repetitions)
+{
+
+temp <- list()
+for(i in 1: repetitions){
+  n<- samplesize
+  A <- rnorm(n,mean=0,sd=1)
+  U <- mvrnorm(n,mu=c(0,0),Sigma=matrix(c(1,0.5,0.5,1),ncol=2))
+  X <-A + U[,1]
+  Y <-X+ U[,2]
+  Z <- X
+  
+  P_A <- A%*%solve(t(A)%*%A)%*%t(A)
+  temp[i] <- list(data.frame(
+    TSLS = K_class(1,Z=Z,Y,n,P_A) %>% as.numeric(),
+    OLS = solve(t(Z)%*%Z)%*%t(Z)%*%Y %>% as.numeric(),
+    K3o4 = K_class(3/4,Z=Z,Y,n,P_A) %>% as.numeric())
+  )
+}
+
+
+res <- temp %>% bind_rows() %>% 
+  mutate(.,ID=seq(1,nrow(.),1)) %>% 
+  gather(Type,Coef, c(-ID)) %>%  
+  expand_grid(InstStrength=as.integer(seq(0,1000,1))) %>% 
+  rowwise() %>% 
+  mutate(MSE = MSE(Coef,InstStrength/100) ,
+         InstStrength = abs(InstStrength)) %>%
+  arrange(Type,Coef,ID,InstStrength) %>%
+  ungroup %>% 
+  group_by(Type,Coef,ID) %>% 
+  mutate(SupMSE=cummax(MSE)) %>% 
+  unique() %>% 
+  ungroup %>% 
+  select(-MSE,-Coef) %>%
+  arrange(ID,InstStrength,SupMSE) %>% 
+  ungroup %>% 
+  group_by(ID,InstStrength) %>% 
+  filter(SupMSE == min(SupMSE)) %>% 
+  ungroup %>% 
+  group_by(ID,Type) %>% 
+  filter(InstStrength == min(InstStrength)|
+           InstStrength == max(InstStrength)) %>% 
+  mutate(Length = max(InstStrength)-min(InstStrength)) %>% 
+  filter(InstStrength == min(InstStrength)) %>% 
+  filter(Type=="K3o4") %>% 
+  ungroup() %>% 
+  summarise(MedianLength=median(Length)) %>% 
+  pull
+return(res)
+}
+
+dat1 <- data.frame(samplesize=c(50,200,500,2000,5000,10000),repetitions=50) %>% 
+  rowwise() %>% 
+  mutate(MedianLength = sim(samplesize,repetitions))
+

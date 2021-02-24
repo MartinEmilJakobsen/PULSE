@@ -36,25 +36,6 @@ COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) %>% mutate_at(c("lat_abst","avexpr","logpgp95","logem4"),.funs=function(x){x-mean(x)}) %>% mutate(Intercept=1)
 
 
-### FINDING OPTIMAL KAPPAS FOR HELDOUT DATA  ###
-fff <-function(Data,no){
-  HoldOutDataset <-  Data %>% 
-    as_tibble() %>%  
-    arrange(logem4) %>% 
-    head(-no/2) %>% 
-    tail(-no/2)
-  HeldOutSamples <- Data %>% 
-    filter(shortnam %notin% HoldOutDataset$shortnam)
-  
-  d <- data.frame(HoldOutVar = HoldOutDataset %>% summarize(var(logem4) ) %>% pull,HeldOutVar = HeldOutSamples %>%  summarize(var(logem4)) %>% pull)
-  return(d)
-}
-KappasForEquality <- data.frame(no=seq(4,32,2)) %>% rowwise() %>%  mutate( g= list(fff(Selected_Data,no))) %>% unnest(cols=c(g)) %>% mutate(KappaForEquality = -(HoldOutVar-HeldOutVar)/HeldOutVar) %>% mutate(HeldOutOverHoldOut= HeldOutVar/HoldOutVar) %>% 
-  rename(InSampleVar=HoldOutVar,
-         OutOfSampleVar=HeldOutVar,
-         OutOfSampleVarOverInSampleVar = HeldOutOverHoldOut) %>% 
-  select(no,InSampleVar,OutOfSampleVar,OutOfSampleVarOverInSampleVar,KappaForEquality)
-
 
  #############################################################################################
 # MODEL M1 WITHOUT INTERCEPT: logpgp95 ~ avexpr  (INSTRUMENTS = logem4)#
@@ -88,42 +69,18 @@ holdoutextremes <- function(Data,noExtremes){
   pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
   #Fuller4
   fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,1),A,Z,Y,n)
-  #KclassOpti 
-  
-  kopt <- K_class(KappasForEquality[(noExtremes-2)/2,"KappaForEquality"],A,Z,Y,n)
-  
-  Worst4Cases1 <- HeldOutSamples %>% 
-    arrange(logem4) %>% 
-    head(2) 
-  Worst4Cases2 <- HeldOutSamples %>%
-    arrange(logem4) %>% 
-    tail(2) 
-  
-  WorstCases <- bind_rows(Worst4Cases1,Worst4Cases2) %>% 
-    select(logpgp95,avexpr,Intercept) %>% 
-    mutate(resOLS = logpgp95- (avexpr*ols["avexpr",]),
-           resIV = logpgp95- (avexpr*iv["avexpr",]),
-           resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"]),
-           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"]),
-           resOPT = logpgp95- (avexpr*kopt["1","logpgp95"] )) %>% 
-    summarize(OLS = sum(resOLS^2)/n(),
-              IV = sum(resIV^2)/n(),
-              PULSE = sum(resPULSE^2)/n(),
-              FULLER4 = sum(resFULLER4^2)/n(),
-              OPT = sum(resOPT^2)/n())
+
   
   MSPE <- HeldOutSamples %>%  
     select(logpgp95,avexpr,Intercept) %>% 
     mutate(resOLS = logpgp95- (avexpr*ols["avexpr",]),
            resIV = logpgp95- (avexpr*iv["avexpr",]),
            resPULSE = logpgp95- (avexpr*pulse["avexpr","logpgp95"]),
-           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"]),
-           resOPT = logpgp95- (avexpr*kopt["1","logpgp95"])) %>% 
+           resFULLER4 = logpgp95- (avexpr*fuller4["avexpr","logpgp95"])) %>% 
     summarize(OLS = sum(resOLS^2)/n(),
               IV = sum(resIV^2)/n(),
               PULSE = sum(resPULSE^2)/n(),
               FULLER4 = sum(resFULLER4^2)/n(),
-              OPT = sum(resOPT^2)/n(),
               WOLS = max(resOLS^2),
               WIV = max(resIV^2),
               WPULSE = max(resPULSE^2),
@@ -146,12 +103,7 @@ holdoutextremes <- function(Data,noExtremes){
               coef.IV = iv["avexpr",],
               coef.PULSE = pulse["avexpr","logpgp95"],
               coef.FULLER4 = fuller4["avexpr","logpgp95"],
-              kappa.FULLER4 = FULLER_k(4,A,A_1,X,Y,n,1),
-              WorstCaseOLS = WorstCases$OLS,
-              WorstCaseIV = WorstCases$IV,
-              WorstCasePULSE = WorstCases$PULSE,
-              WorstCaseFULLER4 = WorstCases$FULLER4,
-              WorstCaseOPT = WorstCases$OPT) %>% 
+              kappa.FULLER4 = FULLER_k(4,A,A_1,X,Y,n,1)) %>% 
     mutate(t=pulse["avexpr","t"],q=pulse["avexpr","q"],l=pulse["avexpr","l"],k=pulse["avexpr","k"])
   return(MSPE)
 }
@@ -166,8 +118,7 @@ summarydat <-data.frame(n=seq(4,32,2)) %>%
 
 
 
-summarydat %>% 
-  bind_cols(.,KappasForEquality) %>%  select(n,coef.OLS,coef.IV,coef.PULSE,coef.FULLER4,kappa.PULSE,kappa.FULLER4,KappaForEquality,OLS,IV,PULSE,FULLER4) %>% 
+summarydat %>%  select(n,coef.OLS,coef.IV,coef.PULSE,coef.FULLER4,kappa.PULSE,kappa.FULLER4,OLS,IV,PULSE,FULLER4) %>% 
   kbl(.,format="latex",digits=4)
 
 #################
@@ -258,36 +209,6 @@ MSPEORDERS <- summarydat %>%
   kbl(.,format="latex",digits=3)
   
   
-#Percentages for only consistent estimators  
-MSPEORDERS <- summarydat %>%
-    unnest(cols=c(dat)) %>%  
-    gather(key="Type",value="MSPE",c(IV,PULSE,FULLER4)) %>% 
-    arrange(MSPE) %>% 
-    group_by(n) %>% 
-    summarise(n=max(n),
-              t=max(t),
-              q=max(q),
-              l=max(l),
-              k=max(k),
-              ORDER = paste0(Type,collapse="<")) 
-  
-  summarydat %>%
-    unnest(cols=c(dat)) %>% 
-    left_join(.,MSPEORDERS %>% select(n,ORDER),by="n") %>% 
-    group_by(ORDER) %>% 
-    summarise(count= n(),
-              WMSPE.OLS = max(OLS),
-              WMSPE.iv = max(IV),
-              WMSPE.pulse = max(PULSE),
-              WMSPE.fuller4 = max(FULLER4),
-              OLS = mean(OLS),
-              PULSE = mean(PULSE),
-              IV = mean(IV),
-              FULLER4 = mean(FULLER4)
-    ) %>% 
-    mutate(Percentage = 100*count/norep) %>% 
-    select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
-    kbl(.,format="latex",digits=3)  
   
 #Table in paper: 
 summarydat %>%
@@ -304,28 +225,24 @@ summarydat %>%
            FO = I(FULLER4<=OLS),
            FT = I(FULLER4<=IV),
            FP = I(FULLER4<=PULSE)) %>% 
-    summarise(OA =sum(OF*OP*OF)/n(),
-              OT= sum(OT)/n(),
-              OP= sum(OP)/n(),
+    summarise(OP= sum(OP)/n(),
               OF= sum(OF)/n(),
-              TA = sum(TO*TP*TF)/n(),
+              OT= sum(OT)/n(),
+              PO= sum(PO)/n(),
+              PF= sum(PF)/n(),
+              PT= sum(PT)/n(),
+              FO= sum(FO)/n(),
+              FP= sum(FP)/n(),
+              FT= sum(FT)/n(),
               TO= sum(TO)/n(),
               TP= sum(TP)/n(),
-              TF= sum(TF)/n(),
-              PA = sum(PO*PT*PF)/n(),
-              PO= sum(PO)/n(),
-              PT= sum(PT)/n(),
-              PF= sum(PF)/n(),
-              FA = sum(FO*FT*FP)/n(),
-              FO= sum(FO)/n(),
-              FT= sum(FT)/n(),
-              FP= sum(FP)/n()) %>%  
+              TF= sum(TF)/n()
+              ) %>%  
     unlist(., use.names=FALSE) %>% 
     sapply(.,function(x){x*100}) %>% 
-    matrix(.,ncol=4,byrow=TRUE) %>% 
+    matrix(.,ncol=3,byrow=TRUE) %>% 
     as.data.frame(.,row.names = c("OLS","TSLS","PULSE","FUL")) %>%
-    select(V2,V3,V4,V1) %>% 
-    mutate_at(c("V1","V2","V3","V4"),.funs=function(x){round(x,digits=1) %>% paste0(.,'%')})  %>% 
+    mutate_at(c("V1","V2","V3"),.funs=function(x){round(x,digits=1) %>% paste0(.,'%')})  %>% 
     kbl(,format="latex",digits=3,row.names = TRUE)
   
 
