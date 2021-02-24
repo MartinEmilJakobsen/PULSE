@@ -17,7 +17,6 @@ library(kableExtra)
 `%notin%` <- Negate(`%in%`)
 
 
-getwd()
 source("../Estimators_Slow.R")
 
 
@@ -29,14 +28,8 @@ source("../Estimators_Slow.R")
 ################################################
 ################################################
 
-COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)
-
-
-
+COLONIAL_Data <- read.delim(file="Data/AJR01_COLONIAL.csv",sep=",",header=TRUE)
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) %>% mutate_at(c("lat_abst","avexpr","logpgp95","logem4"),.funs=function(x){x-mean(x)}) %>% mutate(Intercept=1)
-
-
-
  #############################################################################################
 # MODEL M1 WITHOUT INTERCEPT: logpgp95 ~ avexpr  (INSTRUMENTS = logem4)#
 #############################################################################################
@@ -255,7 +248,7 @@ summarydat %>%
 ################################################
 
 
-QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>% 
+QOB_Data <- read.delim(file="Data/AK91_QOB.txt",sep=" ",header=FALSE) %>% 
   as_tibble() %>% 
   rename(AGE=V1,
          AGEQ=V2,
@@ -448,7 +441,7 @@ summarydat %>%
 getwd()
 source("../Estimators_Slow.R")
 
-Proximity_Data <- read.delim(file="Data/nls.dat",sep="",header=FALSE)  %>% rename(
+Proximity_Data <- read.delim(file="Data/C95_PROXIMITY.dat",sep="",header=FALSE)  %>% rename(
   id                =  V1,
   nearc2            =  V2,
   nearc4          =  V3,

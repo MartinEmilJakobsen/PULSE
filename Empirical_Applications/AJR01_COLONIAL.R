@@ -15,11 +15,9 @@ library(ivpack)
 
 `%notin%` <- Negate(`%in%`)
 
-
-getwd()
 source("../Estimators_Slow.R")
 
-COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)  %>% mutate(Intercept = 1)
+COLONIAL_Data <- read.delim(file="Data/AJR01_COLONIAL.csv",sep=",",header=TRUE)  %>% mutate(Intercept = 1)
 ###################################
 ###################################
 ###################################
@@ -28,11 +26,7 @@ COLONIAL_Data <- read.delim(file="Data/COLONIAL_T4.csv",sep=",",header=TRUE)  %>
 ###################################
 ###################################
 
-
-
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) 
-
-COLONIAL_Data %>%  filter(rich4==1)
 
 ############################################################################
 #COLUMN 1 : logpgp95 ~ avexpr (INSTRUMENTS = logem4)#

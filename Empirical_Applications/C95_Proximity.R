@@ -19,7 +19,7 @@ library(ivpack)
 getwd()
 source("../Estimators_Slow.R")
 
-Proximity_Data <- read.delim(file="Data/nls.dat",sep="",header=FALSE)  %>% rename(
+Proximity_Data <- read.delim(file="Data/C95_PROXIMITY.dat",sep="",header=FALSE)  %>% rename(
   id                =  V1,
   nearc2            =  V2,
   nearc4          =  V3,

@@ -17,7 +17,7 @@ library(kableExtra)
 getwd()
 source("../Estimators_Slow.R")
 
-QOB_Data <- read.delim(file="Data/QOB",sep=" ",header=FALSE) %>% 
+QOB_Data <- read.delim(file="Data/AK91_QOB.txt",sep=" ",header=FALSE) %>% 
   as_tibble() %>% 
   rename(AGE=V1,
          AGEQ=V2,
