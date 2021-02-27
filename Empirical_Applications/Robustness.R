@@ -9,9 +9,6 @@ library(metR)
 library(gridExtra)
 library(rlang)
 library(stringr)
-library(AER)
-library(matlib)
-library(ivpack)
 library(kableExtra)
 
 `%notin%` <- Negate(`%in%`)
@@ -30,8 +27,9 @@ source("../Estimators_Slow.R")
 
 COLONIAL_Data <- read.delim(file="Data/AJR01_COLONIAL.csv",sep=",",header=TRUE)
 Selected_Data <- COLONIAL_Data  %>% filter(baseco == 1) %>% mutate_at(c("lat_abst","avexpr","logpgp95","logem4"),.funs=function(x){x-mean(x)}) %>% mutate(Intercept=1)
- #############################################################################################
-# MODEL M1 WITHOUT INTERCEPT: logpgp95 ~ avexpr  (INSTRUMENTS = logem4)#
+
+#############################################################################################
+# Hold out extremes: MODEL M1 WITHOUT INTERCEPT: logpgp95 ~ avexpr  (INSTRUMENTS = logem4)#
 #############################################################################################
 holdoutextremes <- function(Data,noExtremes){
     HoldOutDataset <- Data %>% 
@@ -515,9 +513,9 @@ Proximity_Data <- read.delim(file="Data/C95_PROXIMITY.dat",sep="",header=FALSE) 
          f8 = ifelse(famed==8,1,0)) %>% 
   mutate(ID = 1:n())
 
-
-#### HOLD OUT RANDOM ####
-
+#################
+#Hold out random#
+#################
 set.seed(1)
 
 holdoutrandom <- function(Data,percentage){
@@ -618,33 +616,3 @@ summarydat %>%
   mutate(Percentage = 100*count/norep) %>% 
   select(ORDER,Percentage,OLS,IV,PULSE,FULLER4,WMSPE.OLS,WMSPE.iv,WMSPE.pulse,WMSPE.fuller4) %>% 
   kbl(.,format="latex",digits=3)
-
-#AverageReduction
-
-
-
-tdat <- summarydat %>%
-  unnest(cols=c(order)) %>% 
-  left_join(.,summarydat %>%
-              unnest(cols=c(order)) %>%  
-              gather(key="Type",value="MSPE",c(OLS,IV)) %>% 
-              arrange(MSPE) %>% 
-              group_by(n) %>% 
-              summarise(n=max(n),
-                        t=max(t),
-                        q=max(q),
-                        l=max(l),
-                        k=max(k),
-                        ORDER = paste0(Type,collapse="<")) %>% select(n,ORDER),by="n") %>% 
-  ungroup %>% 
-  group_by(ORDER) %>% 
-  summarise(count= n(),
-            WMSPE.OLS = quantile(OLS,probs=0.9),
-            WMSPE.iv = quantile(IV,probs=0.9),
-            OLS = mean(OLS),
-            IV = mean(IV)
-  ) %>% 
-  mutate(Percentage = 100*count/norep)
-
-
-(tdat[2,"IV"]-tdat[2,"OLS"])/(tdat[1,"OLS"]-tdat[1,"IV"])

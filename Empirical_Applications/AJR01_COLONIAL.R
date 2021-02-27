@@ -9,9 +9,8 @@ library(metR)
 library(gridExtra)
 library(rlang)
 library(stringr)
-library(AER)
-library(matlib)
 library(ivpack)
+library(kableExtra)
 
 `%notin%` <- Negate(`%in%`)
 
@@ -57,14 +56,6 @@ m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m1.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-
-#LM and IVREG check
-lm(logpgp95~avexpr,data=Selected_Data)
-ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data,x=TRUE)
-summary(ivfit,diagnostics=TRUE)
-
-anderson.rubin.ci(ivfit)
-
 ############################################################################
 #COLUMN 2 : logpgp95 ~ avexpr + lat_abst (INSTRUMENTS = logem4 + lat_abst)#
 ############################################################################
@@ -93,13 +84,6 @@ m2.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #fuller4
 dA <- ncol(A)
 m2.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
-
-#LM and IVREG check
-lm(logpgp95~avexpr+lat_abst,data=Selected_Data)
-ivfit<-ivreg(logpgp95~avexpr+lat_abst|logem4+lat_abst,data=Selected_Data,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
 
 
 ############################################################################
@@ -132,12 +116,6 @@ m3.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m3.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-#LM and IVREG check
-lm(logpgp95~avexpr,data=Selected_Data_woNeoEuropes)
-ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data_woNeoEuropes,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
 
 ############################################################################
 #COLUMN 4 :  logpgp95 ~ avexpr + lat_abst (INSTRUMENTS = logem4 + lat_abst) w/o Neo-Europes
@@ -168,12 +146,6 @@ m4.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m4.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-#LM and IVREG check
-lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woNeoEuropes)
-ivfit<-ivreg(logpgp95~avexpr+lat_abst|logem4+lat_abst,data=Selected_Data_woNeoEuropes,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
 
 ############################################################################
 #COLUMN 5 : logpgp95 ~ avexpr (INSTRUMENTS = logem4) w/o Africa
@@ -205,13 +177,6 @@ m5.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m5.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-#LM and IVREG check
-lm(logpgp95~avexpr,data=Selected_Data_woAfrica)
-ivfit<-ivreg(logpgp95~avexpr|logem4,data=Selected_Data_woAfrica,x=TRUE)
-summary(ivfit,diagnostics=TRUE)
-
-anderson.rubin.ci(ivfit)
-
 
 ############################################################################
 #COLUMN 6 :  logpgp95 ~ avexpr + lat_abst (INSTRUMENTS = logem4 + lat_abst) w/o Africa
@@ -242,13 +207,6 @@ m6.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #fuller4
 dA <- ncol(A)
 m6.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
-
-#LM and IVREG check
-lm(logpgp95~avexpr+lat_abst,data=Selected_Data_woAfrica)
-ivfit<-ivreg(logpgp95~avexpr+lat_abst|logem4+lat_abst,data=Selected_Data_woAfrica,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
 
 
 ############################################################################
@@ -283,12 +241,6 @@ m7.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m7.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-#LM and IVREG check
-lm(logpgp95~avexpr + africa + asia + other_cont,data=Selected_Data_wContinent)
-ivfit<-ivreg(logpgp95~avexpr + africa + asia + other_cont|logem4+africa + asia + other_cont,data=Selected_Data_wContinent,x=TRUE)
-summary(ivfit,diagnostics=TRUE)
-
-anderson.rubin.ci(ivfit)
 
 ############################################################################
 #COLUMN 8 :  logpgp95 ~ avexpr + lat_abst + africa + asia + other_cont (INSTRUMENTS = lat_abst + africa + asia + other_cont ) w/continentIndicator
@@ -322,12 +274,6 @@ m8.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 dA <- ncol(A)
 m8.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
 
-#LM and IVREG check
-lm(logpgp95~avexpr + africa + asia + other_cont+lat_abst,data=Selected_Data_wContinent)
-ivfit<-ivreg(logpgp95~avexpr + africa + asia + other_cont+lat_abst| africa + asia + other_cont+logem4+lat_abst,data=Selected_Data_wContinent,x=TRUE)
-summary(ivfit, diagnostics = TRUE)
-
-anderson.rubin.ci(ivfit)
 
 ############################################################################
 #COLUMN 9 :  loghjypl ~ avexpr (INSTRUMENTS = logem4 )
@@ -358,12 +304,6 @@ K_class(1,A,Z,Y,n)
 #PULSE
 PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 
-#LM and IVREG check
-lm(loghjypl~avexpr,data=Selected_Data_NAremoved)
-ivfit<-ivreg(loghjypl~avexpr | logem4,data=Selected_Data_NAremoved,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
 
 #############
 Table <- data.frame(

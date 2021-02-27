@@ -9,10 +9,8 @@ library(metR)
 library(gridExtra)
 library(rlang)
 library(stringr)
-library(AER)
-library(matlib)
 library(ivpack)
-
+library(kableExtra)
 
 
 
@@ -130,14 +128,6 @@ m1.pulse <- PULSE(A,A_1,X,Y,p=0.05,N=10000,n)
 #fuller4
 dA <- ncol(A)
 m1.fuller4 <-  K_class(FULLER_k(4,A,A_1,X,Y,n,dA),A,Z,Y,n)
-
-#LM and IVREG check
-lm(lwage76~ed76+exp+expsq+black+smsa76r+reg76r+smsa66r+reg662+reg663+reg664+reg665+reg666+reg667+reg668+reg669,data=Selected_Data)
-ivfit<-ivreg(lwage76~ed76+exp+expsq+black+smsa76r+reg76r+smsa66r+reg662+reg663+reg664+reg665+reg666+reg667+reg668+reg669|nearc4+age+agesq+black+smsa76r+reg76r+smsa66r+reg662+reg663+reg664+reg665+reg666+reg667+reg668+reg669+Intercept,data=Selected_Data,x=TRUE)
-summary(ivfit)
-
-anderson.rubin.ci(ivfit)
-
 
 
 ############################################################################
