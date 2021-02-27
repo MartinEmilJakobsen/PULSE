@@ -1,6 +1,6 @@
 The R scripts can be run on R version 4.0.3.
 
-This directory contains the rar-file "Packages_and_dependencies.rar" which contains a mirror of non-standard packages used. These packages consists of all dependencies used for the R-packages:'MASS', 'matrixcalc', 'stats', 'lqmm', 'expm', 'furrr', 'tidyverse', 'metR', 'gridExtra', 'rlang' and 'stringr'.
+This directory contains the rar-file "Packages_and_dependencies_1.rar" and "Packages_and_dependencies_2.rar" which contains a mirror of non-standard packages used. These packages consists of all dependencies used for the R-packages:'MASS', 'matrixcalc', 'stats', 'lqmm', 'expm', 'furrr', 'tidyverse', 'metR', 'gridExtra', 'rlang' and 'stringr'.
 
 LIST OF ALL DEPENDENCIES
 "MASS_7.3-53.1.zip"
