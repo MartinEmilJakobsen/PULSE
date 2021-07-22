@@ -227,7 +227,7 @@ ggsave(paste0("Plots/UnderidentifiedConvergence.eps"), plot = last_plot(), devic
 ############### SMALL SAMPLESIZES MANY MODELS #################
 set.seed(20000)
 
-N <- 200
+N <- 1000
 alphas <- runif(N,1,2)
 delta1s <- runif(N,1,2)
 delta2s <- runif(N,1,2)
@@ -241,40 +241,6 @@ Data <- data.frame(alpha=alphas,delta1=delta1s,delta2=delta2s,gamma=gammas,eta=e
   mutate(model=1:n()) %>% 
   expand_grid(samplesize,
               rep=1:100) 
-
-
-genest <- function(alpha,delta1,delta2,gamma,eta,samplesize){
-  n <- samplesize
-  A <- rnorm(n,mean=0,sd=1) %>% as.matrix
-  H <- rnorm(n,mean=0,sd=1) %>% as.matrix
-  X1 <- eta*A+ delta1*H + rnorm(n,mean=0,sd=1) %>% as.matrix
-  Y <- alpha*X1+delta2*H+rnorm(n,mean=0,sd=1) %>% as.matrix
-  X2 <- gamma*Y + rnorm(n,mean=0,sd=1) %>% as.matrix
-  X <- cbind(X1,X2)
-  Z <- X
-  
-  pulse <- PULSE(A,A_1=0,X,Y,p=0.05,N=100000000,n)
-  bPULSE <- pulse$alpha
-  PULSEqOLS <- ifelse(sum(pulse$l)==0,1,0)
-  b2true <- (gamma*(delta2^2+1))/(1+gamma^2*(delta2^2+1))
-  b1true <- (1-b2true*gamma)*alpha
-  btrue <- c(b1true,b2true)
-  
-  Dmat <- 2*t(Z)%*%Z
-  dvec <- 2*t(Y)%*%Z
-  Amat <- t(A%*%solve(t(A)%*%A)%*%t(A)%*%Z)
-  bvec <- A%*%solve(t(A)%*%A)%*%t(A)%*%Y
-  Amat <- cbind(Amat,-Amat)
-  bvec <- c(bvec-rep(0.0000000001,n),-bvec-rep(0.0000000001,n))
-  bIV <- solve.QP(Dmat,dvec,Amat,bvec,meq=0,factorized=FALSE)$solution
-  
-  
-  data.frame(TracePULSE  = sum((bPULSE - btrue)^2),
-             TraceIV = sum((bIV - btrue)^2),
-             PULSEqOLS = PULSEqOLS)
-}
-
-
 
 Dat <- Data %>% 
   mutate(res = pmap(.l=list(alpha,delta1,delta2,gamma,eta,samplesize),.f=genest)) %>% 
