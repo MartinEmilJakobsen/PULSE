@@ -3,7 +3,6 @@ library(magrittr)
 library(matlib)
 library(quadprog)
 library(gridExtra)
-#Estimators_Slow functions needed.
 
 ################################################
 ##### Implementation of K-class estimators #####
@@ -33,29 +32,10 @@ K_class_lambda <- function(lambda,A,Z,Y,n){
   return(a)
 }
 
-LIML_k <- function(A,A_1,X,Y,n){
-  
-  QA<- qr.Q(qr(A))
-  RA<- qr.R(qr(A))
-  if(norm(A_1) == 0){
-    W_1 = t(cbind(Y,X))%*%cbind(Y,X)
-  }
-  else{
-    #    M_A_1 <- diag(n)- A_1%*%solve(t(A_1)%*%(A_1))%*%t(A_1)
-    W_1 = t(cbind(Y,X))%*%cbind(Y,X)  - t(cbind(Y,X))%*%A_1%*%solve(t(A_1)%*%(A_1))%*%t(A_1)%*%cbind(Y,X)
-  }
-  W = t(cbind(Y,X))%*%cbind(Y,X) - t(cbind(Y,X))%*%A%*%inv(RA)%*%t(QA)%*%cbind(Y,X)
-  return(min(abs(eigen(W_1%*%solve(W))$values)))
-}
 
-FULLER_k <- function(alpha,A,A_1,X,Y,n,dA){
-  LIML_kappa <- LIML_k(A,A_1,X,Y,n)
-  return(LIML_kappa-alpha/(n-dA))
-}
-
-########################################################################
-###### Implementation of P-value approach with BinarySearch ############
-########################################################################
+#############################################################################################
+###### Implementation of P-value approach with BinarySearch (for underid. setup) ############
+#############################################################################################
 
 Test_Statistic <- function(a,A,Z,Y,n,q){
   QA<- qr.Q(qr(A))
@@ -252,33 +232,7 @@ Results
 
 Results %>% mutate(dec=(TraceIV-TracePULSE)/TraceIV) %>% group_by(samplesize) %>% summarize(meandec=mean(dec))
 
-PlotData <- Results %>%  gather(Method,Trace,c(TracePULSE,TraceIV)) %>% 
-  mutate(model=as.character(model))
 
-p1 <- ggplot(data=PlotData,aes(x=samplesize,y=Trace,color=model,linetype=Method,group=interaction(model,Method)))+
-  geom_line()+
-  geom_point()+
-  scale_x_continuous(trans="log")+
-  scale_y_continuous(limits=c(0,0.1))
-
-p2 <- ggplot(data=PlotData,aes(x=samplesize,y=proc,color=model,linetype=Method,group=interaction(model,Method)))+
-  geom_line()+
-  geom_point()
-
-grid.arrange(p1, p2, nrow = 1)
-
-
-
-p1 <- ggplot(data=PlotData %>% filter(Method=="TracePULSE"),aes(x=samplesize,y=Trace,group=interaction(model,Method)))+
-  geom_line()+
-  ylab("Trace MSE")+
-  xlab("Sample size")+
-  scale_x_continuous(trans="log10",breaks=c(50,100,300,1000,5000))
-
-p1  
-ggsave(paste0("Plots/UnderidentifiedConvergence.eps"), plot = last_plot(), device = "eps", path = NULL,
-       scale = 1, width = 12, height = 4, units = c("in"),
-       dpi = 200, limitsize = FALSE)
 
 
 
