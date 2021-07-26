@@ -38,7 +38,9 @@ To generate the experiment data: Run Script.R or manually run the following scri
     * *This scripts runs the multivariate experiment with fixed confounding for $\beta=(0,0)$. It computes the performance measures for OLS, Fuller(1), Fuller(4) and PULSE with $p_{\min}=0.05$*
 7. **Experiment_Univariate_AlternativeSetups.R**
     * *This scripts runs the univariate experiment under the alternative setups.
- 
+7. **Experiment_UnderIdentified.R**
+    * *This scripts runs the under-identified experiment.
+    
 #### 1.b) Run Experiment for Superior Models
 This will extract the coefficients for the models where PULSE(05) is MSE superior to Fuller(4) of the "Experiment_Multivariate_VaryingConfounding_Beta00_PULSE05.R" experiment and rerun the experiment for these models with 25000 repetitions to account for selection bias. 
 
