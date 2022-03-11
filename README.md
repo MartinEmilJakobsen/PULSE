@@ -7,7 +7,7 @@ Implementation of Estimators is found in "Estimators.R". The PULSE estimate is c
 
 PULSE(A,A_1,X,Y,p,N)
 
-where A,A_1,X,Z,Y are the datamatrices (rowwise obeservations) for: all exogenous, included exogenous, included endogenous and target endogeous, respectively. If there is no included exogenous variables, then set A_1= "none". p is the $p_{min}$ for PULSE rejection threshold. 1/N is the precision of the binary search (in the lambda space).
+where A,A_1,X,Y are the datamatrices (rowwise obeservations) for: all exogenous, included exogenous, included endogenous and target endogeous, respectively. If there is no included exogenous variables, then set A_1= "none". p is the $p_{min}$ for PULSE rejection threshold. 1/N is the precision of the binary search (in the lambda space).
 
 ## Replicate Empirical Analysis
 See readme.txt in sub-folder /Empirical_Analysis
@@ -49,7 +49,6 @@ This will extract the coefficients for the models where PULSE(05) is MSE superio
     * This script saves "Data/VaryingConfounding_MSESuperiorModelData_[EXECUTIONTIME].RDS" with the extracted models. 
 3. Edit the datapointer in "Experiment_Multivariate_VaryingConfounding_SuperiorModels.R" to the extracted models and run the script.
 
-###
 
 ### 2) Data Analysis 
 
