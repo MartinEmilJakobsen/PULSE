@@ -2,6 +2,13 @@
 Repository for simulations and illustrations for "Distributional Robustness of K-class Estimators and the PULSE" @ https://arxiv.org/abs/2005.03353. 
 
 
+## Install PULSE R-Package
+```R
+devtools::install_github("MartinEmilJakobsen/PULSE", subdir = "PULSE")
+```
+
+
+
 ## Implementation of K-class estimators and the PULSE
 Implementation of Estimators is found in "Estimators.R". The PULSE estimate is computed by running:
 
