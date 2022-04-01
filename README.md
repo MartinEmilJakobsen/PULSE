@@ -1,5 +1,5 @@
 # Distributional robustness of K-class estimators and the PULSE
-Implementation of the PULSE estimator and repository for simulations and illustrations for "Distributional robustness of K-class estimators and the PULSE" @ https://doi.org/10.1093/ectj/utab031 + https://arxiv.org/abs/2005.03353 . 
+Implementation of the PULSE estimator and replication package repository for "Distributional robustness of K-class estimators and the PULSE" @ https://doi.org/10.1093/ectj/utab031 + https://arxiv.org/abs/2005.03353 . 
 
 
 ## The PULSE R-Package
