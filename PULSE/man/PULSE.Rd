@@ -7,22 +7,22 @@
 PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)
 }
 \arguments{
-\item{A}{exogenous variables (vector/matrix/data.frame)}
+\item{A}{exogenous variables (vector/matrix/data.frame).}
 
-\item{X}{included endogenous regressors (vector/matrix/data.frame)}
+\item{X}{included endogenous regressors (vector/matrix/data.frame).}
 
-\item{Y}{target variable (vector/matrix/data.frame)}
+\item{Y}{target variable (vector/matrix/data.frame).}
 
-\item{p}{the p-value PULSE hyperparameter (numeric between 0 and 1)}
+\item{p}{the p-value PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).}
 
-\item{N}{reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric)}
+\item{N}{reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).}
 
-\item{A_inc}{included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame)}
+\item{A_inc}{included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame).}
 
-\item{printsummary}{prints comparison summary. Default FALSE (logical)}
+\item{printsummary}{prints comparison summary. Default FALSE (logical).}
 }
 \value{
-the estimated PULSE estimate
+the estimated PULSE estimate.
 }
 \description{
 \code{PULSE} computes the PULSE estimate; see https://arxiv.org/abs/2005.03353.
@@ -31,6 +31,8 @@ the estimated PULSE estimate
 In the over-identified setup the call outputs a message if either (a) the TSLS esimator is rejected, in which case the PULSE reverts to the Fuller(4) estimate, or (b) the OLS estimate is accepted, in which case PULSE coincides with the OLS estimate.
 
 The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-(X,A_ind)*estimate is uncorrelated with the exogenous variables A.
+
+p is the rejection threshold for the test of uncorrelated residuals. 1/N is the binary search precision of the K-class parameter in the lambda search space.
 }
 \examples{
 
@@ -58,6 +60,7 @@ Y <- 0.5*X + H + rnorm(n)
 PULSE(A = A, X = X, Y = Y ,p = 0.05, N = 1000)
 # Printing the comparison summary
 PULSE(A = A, X = X, Y = Y ,p = 0.05, N = 1000, printsummary = TRUE)
+
 ### Over-identified example ###
 # Generate data
 n  <- 500

@@ -1,18 +1,3 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Install Package:           'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
-
 #' K-class estimator (kappa parametrization)
 #'
 #' @description
@@ -217,6 +202,7 @@ Test_Statistic <- function(alpha,A,Z,Y){
 #'
 #' The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-(X,A_ind)*estimate is uncorrelated with the exogenous variables A.
 #'
+#' p is the rejection threshold for the test of uncorrelated residuals. 1/N is the binary search precision of the K-class parameter in the lambda search space.
 #'
 #' @examples
 #'
@@ -244,6 +230,7 @@ Test_Statistic <- function(alpha,A,Z,Y){
 #' PULSE(A = A, X = X, Y = Y ,p = 0.05, N = 1000)
 #' # Printing the comparison summary
 #' PULSE(A = A, X = X, Y = Y ,p = 0.05, N = 1000, printsummary = TRUE)
+#'
 #' ### Over-identified example ###
 #' # Generate data
 #' n  <- 500
@@ -259,14 +246,14 @@ Test_Statistic <- function(alpha,A,Z,Y){
 #' # Printing the comparison summary
 #' PULSE(A = A, A_inc = A3, X = X, Y = Y ,p = 0.05, N = 1000, printsummary = TRUE)
 #'
-#' @param A exogenous variables (vector/matrix/data.frame)
-#' @param A_inc included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame)
-#' @param X included endogenous regressors (vector/matrix/data.frame)
-#' @param Y target variable (vector/matrix/data.frame)
-#' @param p the p-value PULSE hyperparameter (numeric between 0 and 1)
-#' @param N reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric)
-#' @param printsummary prints comparison summary. Default FALSE (logical)
-#' @return the estimated PULSE estimate
+#' @param A exogenous variables (vector/matrix/data.frame).
+#' @param A_inc included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame).
+#' @param X included endogenous regressors (vector/matrix/data.frame).
+#' @param Y target variable (vector/matrix/data.frame).
+#' @param p the p-value PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).
+#' @param N reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).
+#' @param printsummary prints comparison summary. Default FALSE (logical).
+#' @return the estimated PULSE estimate.
 #' @importFrom stats qchisq pchisq
 #' @import tibble
 #' @import dplyr
@@ -392,4 +379,3 @@ PULSE <- function(A,X,Y, p = 0.05, N = 1000,A_inc = NULL,printsummary = FALSE){
   message(message)
   return(coefs)
 }
-
