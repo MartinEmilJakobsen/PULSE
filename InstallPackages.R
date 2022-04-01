@@ -1,1 +1,0 @@
-install.packages(c('MASS','matrixcalc','stats','lqmm','expm','furrr','tidyverse','metR','gridExtra','rlang','stringr'),repos="https://mirrors.dotsrc.org/cran/")
