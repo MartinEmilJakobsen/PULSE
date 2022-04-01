@@ -172,7 +172,7 @@ pre code {
 
 
 <div id="distributional-robustness-of-k-class-estimators-and-the-pulse" class="section level1">
-<h1>Distributional Robustness of K-class Estimators and the PULSE</h1>
+<h1>Distributional robustness of K-class estimators and the PULSE</h1>
 <p>Implementation of the PULSE estimator and repository for simulations and illustrations for “Distributional robustness of K-class estimators and the PULSE” @ <a href="https://doi.org/10.1093/ectj/utab031" class="uri">https://doi.org/10.1093/ectj/utab031</a> + <a href="https://arxiv.org/abs/2005.03353" class="uri">https://arxiv.org/abs/2005.03353</a> .</p>
 <div id="the-pulse-r-package" class="section level2">
 <h2>The PULSE R-Package</h2>
@@ -185,6 +185,7 @@ pre code {
 <blockquote>
 <p><code>PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)</code></p>
 </blockquote>
+<pre class="r"><code>PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)</code></pre>
 <div id="arguments" class="section level5">
 <h5>Arguments</h5>
 <ul>
@@ -192,7 +193,7 @@ pre code {
 <li><code>X</code>: included endogenous regressors (vector/matrix/data.frame).</li>
 <li><code>Y</code>: target variable (vector/matrix/data.frame).</li>
 <li><code>p</code>: the p_min PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).</li>
-<li><code>N</code>: reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).</li>
+<li><code>N</code>: reciprocal binary search precision, i.e. a precision of 1/N. Default 1000 (integer/numeric).</li>
 <li><code>A_inc</code>: included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame).</li>
 <li><code>printsummary</code>: prints comparison summary. Default FALSE (logical).</li>
 </ul>

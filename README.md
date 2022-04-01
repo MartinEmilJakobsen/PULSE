@@ -1,4 +1,4 @@
-# Distributional Robustness of K-class Estimators and the PULSE
+# Distributional robustness of K-class estimators and the PULSE
 Implementation of the PULSE estimator and repository for simulations and illustrations for "Distributional robustness of K-class estimators and the PULSE" @ https://doi.org/10.1093/ectj/utab031 + https://arxiv.org/abs/2005.03353 . 
 
 
@@ -13,14 +13,16 @@ devtools::install_github("MartinEmilJakobsen/PULSE", subdir = "PULSE")
 
 ### Usage
 
->`PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)`
+```R
+PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)
+```
 
 ##### Arguments
 * `A`: exogenous variables (vector/matrix/data.frame row-wise obeservations).
 * `X`: included endogenous regressors (vector/matrix/data.frame).
 * `Y`: target variable (vector/matrix/data.frame).
 * `p`: the p_min PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).
-* `N`: reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).
+* `N`: reciprocal binary search precision, i.e. a precision of 1/N. Default 1000 (integer/numeric).
 * `A_inc`: included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame).
 * `printsummary`: prints comparison summary. Default FALSE (logical).
 

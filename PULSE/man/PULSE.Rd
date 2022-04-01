@@ -15,7 +15,7 @@ PULSE(A, X, Y, p = 0.05, N = 1000, A_inc = NULL, printsummary = FALSE)
 
 \item{p}{the p-value PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).}
 
-\item{N}{reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).}
+\item{N}{reciprocal binary search precision, i.e. a precision of 1/N. Default 1000 (integer/numeric).}
 
 \item{A_inc}{included exogenous regressors. Default NULL, i.e., no included exogeneous regressors. (vector/matrix/data.frame).}
 

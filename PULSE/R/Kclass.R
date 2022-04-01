@@ -251,7 +251,7 @@ Test_Statistic <- function(alpha,A,Z,Y){
 #' @param X included endogenous regressors (vector/matrix/data.frame).
 #' @param Y target variable (vector/matrix/data.frame).
 #' @param p the p-value PULSE hyperparameter. Default 0.05 (numeric between 0 and 1).
-#' @param N reciprocal binary search precision, i.e. a precision of 1/N (integer/numeric).
+#' @param N reciprocal binary search precision, i.e. a precision of 1/N. Default 1000 (integer/numeric).
 #' @param printsummary prints comparison summary. Default FALSE (logical).
 #' @return the estimated PULSE estimate.
 #' @importFrom stats qchisq pchisq
