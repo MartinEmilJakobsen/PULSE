@@ -331,14 +331,19 @@ PULSE <- function(A,X,Y, p = 0.05, N = 1000,A_inc = NULL,printsummary = FALSE){
   }
 
   if(printsummary == TRUE){
+    
+    coefficients <- colnames(Z)
+    ols <- Kclass(0,A,Z,Y)
+    pulse <- coefs
+    fuller1 <- Kclass(Fuller_k(1,A,X,Y,A_inc),A,Z,Y)
+    fuller4 <- Kclass(Fuller_k(4,A,X,Y,A_inc),A,Z,Y)
+    if(message == "Note: OLS was accepted."){lmax = 0}
+    
     if(UNDERID == FALSE){
-      coefficients <- colnames(Z)
-      ols <- Kclass(0,A,Z,Y)
       tsls <- Kclass(1,A,Z,Y)
-      pulse <- coefs
-      fuller1 <- Kclass(Fuller_k(1,A,X,Y,A_inc),A,Z,Y)
-      fuller4 <- Kclass(Fuller_k(4,A,X,Y,A_inc),A,Z,Y)
       liml <- Kclass(LIML_k(A,X,Y,A_inc),A,Z,Y)
+      
+
 
       d1 <- data.frame(coefficients,ols, pulse, tsls, liml, fuller1, fuller4) %>%
         tidyr::pivot_longer(cols=-c(coefficients),names_to="method",values_to="coef") %>%
@@ -355,11 +360,7 @@ PULSE <- function(A,X,Y, p = 0.05, N = 1000,A_inc = NULL,printsummary = FALSE){
         dplyr::mutate(dplyr::across(-c(method) , ~ sprintf("%.10f", .x) ))
       print(d1)
     } else {
-      coefficients <- colnames(Z)
-      ols <- Kclass(0,A,Z,Y)
-      pulse <- coefs
-      fuller1 <- Kclass(Fuller_k(1,A,X,Y,A_inc),A,Z,Y)
-      fuller4 <- Kclass(Fuller_k(4,A,X,Y,A_inc),A,Z,Y)
+      
 
       d1 <- data.frame(coefficients,ols, pulse, fuller1, fuller4) %>%
         tidyr::pivot_longer(cols=-c(coefficients),names_to="method",values_to="coef") %>%
