@@ -30,9 +30,9 @@ the estimated PULSE estimate.
 \details{
 In the over-identified setup the call outputs a message if either (a) the TSLS esimator is rejected, in which case the PULSE reverts to the Fuller(4) estimate, or (b) the OLS estimate is accepted, in which case PULSE coincides with the OLS estimate.
 
-The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-(X,A_ind)*estimate is uncorrelated with the exogenous variables A.
+The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-cbind(X,A_inc)\%*\%estimate is uncorrelated with the exogenous variables A.
 
-p is the rejection threshold for the test of uncorrelated residuals. 1/N is the binary search precision of the K-class parameter in the lambda search space.
+p is the rejection threshold for the test that the regression residuals is uncorrelated with the exogenous variables . 1/N is the binary search precision of the K-class parameter in the lambda search space.
 }
 \examples{
 

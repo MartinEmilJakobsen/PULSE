@@ -200,9 +200,9 @@ Test_Statistic <- function(alpha,A,Z,Y){
 #' @details
 #' In the over-identified setup the call outputs a message if either (a) the TSLS esimator is rejected, in which case the PULSE reverts to the Fuller(4) estimate, or (b) the OLS estimate is accepted, in which case PULSE coincides with the OLS estimate.
 #'
-#' The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-(X,A_ind)*estimate is uncorrelated with the exogenous variables A.
+#' The summary output generated with printsummary=TRUE is given by the following columns: method, dim(X+A_inc) columns with coefficient estimates, K-class kappa corresponding to the estimate, the test-statistic evaluated in each estimate, and the p.value for the test that the regression residuals Y-cbind(X,A_inc)%*%estimate is uncorrelated with the exogenous variables A.
 #'
-#' p is the rejection threshold for the test of uncorrelated residuals. 1/N is the binary search precision of the K-class parameter in the lambda search space.
+#' p is the rejection threshold for the test that the regression residuals is uncorrelated with the exogenous variables . 1/N is the binary search precision of the K-class parameter in the lambda search space.
 #'
 #' @examples
 #'
@@ -331,18 +331,18 @@ PULSE <- function(A,X,Y, p = 0.05, N = 1000,A_inc = NULL,printsummary = FALSE){
   }
 
   if(printsummary == TRUE){
-    
+
     coefficients <- colnames(Z)
     ols <- Kclass(0,A,Z,Y)
     pulse <- coefs
     fuller1 <- Kclass(Fuller_k(1,A,X,Y,A_inc),A,Z,Y)
     fuller4 <- Kclass(Fuller_k(4,A,X,Y,A_inc),A,Z,Y)
     if(message == "Note: OLS was accepted."){lmax = 0}
-    
+
     if(UNDERID == FALSE){
       tsls <- Kclass(1,A,Z,Y)
       liml <- Kclass(LIML_k(A,X,Y,A_inc),A,Z,Y)
-      
+
 
 
       d1 <- data.frame(coefficients,ols, pulse, tsls, liml, fuller1, fuller4) %>%
@@ -360,7 +360,7 @@ PULSE <- function(A,X,Y, p = 0.05, N = 1000,A_inc = NULL,printsummary = FALSE){
         dplyr::mutate(dplyr::across(-c(method) , ~ sprintf("%.10f", .x) ))
       print(d1)
     } else {
-      
+
 
       d1 <- data.frame(coefficients,ols, pulse, fuller1, fuller4) %>%
         tidyr::pivot_longer(cols=-c(coefficients),names_to="method",values_to="coef") %>%
